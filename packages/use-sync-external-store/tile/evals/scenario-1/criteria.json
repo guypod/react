@@ -1,0 +1,41 @@
+{
+  "context": "This criteria evaluates the engineer's proficiency in using the use-sync-external-store package to build an external store with efficient subscription patterns, selector-based memoization, and custom equality functions for performance optimization.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Store subscribe implementation",
+      "description": "The store implements a subscribe method that accepts a callback function and returns an unsubscribe function. The subscribe method must maintain a list of listeners and call them when state changes. The unsubscribe function must properly remove the listener to prevent memory leaks.",
+      "max_score": "15"
+    },
+    {
+      "name": "Store getSnapshot implementation",
+      "description": "The store implements a getSnapshot method that returns the current state snapshot. The snapshot must be cached/memoized between state changes to prevent infinite loops, as required by useSyncExternalStore API contract.",
+      "max_score": "10"
+    },
+    {
+      "name": "useSyncExternalStore usage",
+      "description": "Components use useSyncExternalStore (or useSyncExternalStoreWithSelector) from the use-sync-external-store package to subscribe to the external store. The hook must be called with the store's subscribe and getSnapshot functions.",
+      "max_score": "15"
+    },
+    {
+      "name": "Selector pattern implementation",
+      "description": "CartSummary component uses useSyncExternalStoreWithSelector with a selector function that extracts only the needed data (itemCount and totalPrice) from the full store snapshot. The selector transforms the full state into a derived summary object.",
+      "max_score": "20"
+    },
+    {
+      "name": "Custom equality function",
+      "description": "CartSummary uses the isEqual parameter of useSyncExternalStoreWithSelector to provide a custom equality function that performs structural comparison of the summary object. The equality function must compare the itemCount and totalPrice fields to prevent re-renders when only irrelevant fields (like lastUpdated) change.",
+      "max_score": "20"
+    },
+    {
+      "name": "Item-specific selection",
+      "description": "CartItem component uses useSyncExternalStoreWithSelector with a selector that extracts only the specific item by ID from the items array. This ensures the component only has access to its own item's data.",
+      "max_score": "10"
+    },
+    {
+      "name": "Item isolation equality",
+      "description": "CartItem uses a custom isEqual function that compares item properties (name, price, quantity) to prevent re-renders when other items in the cart change. This achieves proper component isolation where each CartItem only re-renders when its specific item data changes.",
+      "max_score": "10"
+    }
+  ]
+}

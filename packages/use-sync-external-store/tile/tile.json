@@ -1,0 +1,7 @@
+{
+  "name": "tessl/npm-use-sync-external-store",
+  "version": "1.7.0",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/use-sync-external-store@1.7.0",
+  "summary": "Backwards-compatible shim for React.useSyncExternalStore that works with React 16.8+, 17.x, and 18+."
+}
