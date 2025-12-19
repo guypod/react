@@ -1,0 +1,7 @@
+{
+  "name": "tessl/npm-react-forgive-client",
+  "version": "0.0.1",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/react-forgive-client@0.0.0",
+  "summary": "Experimental VS Code extension providing LSP client for React development with automatic dependency analysis and visualization"
+}

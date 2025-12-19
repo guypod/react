@@ -1,0 +1,41 @@
+{
+  "context": "This criteria evaluates how effectively the engineer uses the vscode-languageclient package to build a VSCode extension that communicates with a language server. The assessment focuses on proper use of the LanguageClient class, custom request types, and VSCode extension patterns for LSP integration.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "LanguageClient instantiation",
+      "description": "Creates a LanguageClient instance with proper configuration including client ID, client name, ServerOptions, and LanguageClientOptions. The ServerOptions should specify the server module path and use TransportKind.ipc for inter-process communication.",
+      "max_score": "20"
+    },
+    {
+      "name": "DocumentSelector configuration",
+      "description": "Configures the documentSelector in LanguageClientOptions to target JavaScript and TypeScript files using language identifiers 'javascriptreact' and 'typescriptreact' (or 'javascript' and 'typescript').",
+      "max_score": "10"
+    },
+    {
+      "name": "RequestType definition",
+      "description": "Defines a custom RequestType with proper generic type parameters (request params type, response type, and error type) for the 'code/getSuggestions' protocol. The RequestType should be created using the RequestType constructor or similar pattern from vscode-languageclient.",
+      "max_score": "20"
+    },
+    {
+      "name": "sendRequest usage",
+      "description": "Uses the LanguageClient's sendRequest method to send custom requests to the server, passing the custom RequestType and appropriate parameters. Properly handles the returned Promise with the server's response.",
+      "max_score": "15"
+    },
+    {
+      "name": "Hover provider registration",
+      "description": "Registers a hover provider using vscode.languages.registerHoverProvider with the same document selector. The provider's provideHover method should trigger requests to the language server and return hover content based on the server's response.",
+      "max_score": "15"
+    },
+    {
+      "name": "Client lifecycle start",
+      "description": "Calls the start() method on the LanguageClient instance to initiate the connection with the language server. May optionally use onReady() to wait for the server to be fully initialized before performing operations.",
+      "max_score": "10"
+    },
+    {
+      "name": "Client lifecycle stop",
+      "description": "Implements the deactivate() function to properly stop the LanguageClient by calling the stop() method, returning the Thenable result to ensure graceful shutdown.",
+      "max_score": "10"
+    }
+  ]
+}
