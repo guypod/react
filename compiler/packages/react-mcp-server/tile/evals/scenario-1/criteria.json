@@ -1,0 +1,36 @@
+{
+  "context": "This criteria evaluates proficiency in using babel-plugin-react-compiler to analyze React components. It assesses the engineer's ability to configure Babel transformations, integrate the React Compiler plugin, capture compilation diagnostics, and parse compiled output to extract memoization information.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Babel Configuration",
+      "description": "Correctly configures Babel with parseAsync using appropriate parser plugins for TypeScript ('typescript') and JSX ('jsx') to parse React component code",
+      "max_score": "15"
+    },
+    {
+      "name": "React Compiler Integration",
+      "description": "Correctly integrates babel-plugin-react-compiler into the Babel transformation pipeline using transformFromAstAsync with the plugin in the plugins array",
+      "max_score": "20"
+    },
+    {
+      "name": "Diagnostic Capture Setup",
+      "description": "Configures PluginOptions with a logger object that implements the logEvent callback to capture CompileError events and extract error details including reason and location",
+      "max_score": "20"
+    },
+    {
+      "name": "Error Extraction",
+      "description": "Correctly extracts compilation errors from logged events, formats error messages, and converts SourceLocation objects to 'line:column' string format (e.g., '5:10') or null when location is unavailable",
+      "max_score": "15"
+    },
+    {
+      "name": "Memoization Detection",
+      "description": "Detects memoization in compiled code by checking for the presence of the cache helper import (e.g., 'import { c as _c } from \"react/compiler-runtime\"') in the output",
+      "max_score": "15"
+    },
+    {
+      "name": "Cache Size Extraction",
+      "description": "Extracts the cache size from the compiled output by parsing the cache initialization pattern (e.g., 'const $ = _c(5)') and extracting the numeric argument passed to the cache function",
+      "max_score": "15"
+    }
+  ]
+}

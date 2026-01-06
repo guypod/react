@@ -1,0 +1,7 @@
+{
+  "name": "tessl/npm-react-mcp-server",
+  "version": "0.0.1",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/react-mcp-server@0.0.0",
+  "summary": "An experimental MCP server that provides React development tools including documentation search, React Compiler integration, performance measurement, and component tree inspection"
+}
