@@ -1,101 +1,70 @@
-# React Performance Optimizer
+# React Compiler MCP Tool
 
-Build a React component performance analyzer that uses advanced compilation and runtime measurement to identify and report optimization opportunities.
+Build a tool that exposes the React Compiler through the Model Context Protocol, allowing AI assistants to compile and analyze React components with pipeline introspection capabilities.
 
-## Problem Statement
+## Capabilities
 
-You need to create a tool that analyzes React components to determine if they can benefit from automatic memoization. The tool should:
+### Basic Compilation
 
-1. Compile React component code and extract compilation diagnostics
-2. Identify whether the component compiled successfully or encountered bailouts
-3. When compilation succeeds, verify the optimization by checking for memoization cache initialization
-4. For components with bailouts, extract the specific error messages and their locations
+- Compiles a simple React component with useState and returns the optimized code [@test](../test/compile-basic.test.ts)
+- Returns bailout diagnostic messages when code cannot be optimized due to Rules of React violations [@test](../test/compile-bailout.test.ts)
 
-## Requirements
+### Pipeline Pass Inspection
 
-### Component Analyzer
+- Returns HIR (High-level Intermediate Representation) output when 'HIR' pass is requested [@test](../test/inspect-hir.test.ts)
+- Returns ReactiveFunction representation when 'ReactiveFunction' pass is requested [@test](../test/inspect-reactive.test.ts)
 
-Create a TypeScript file `analyzer.ts` that exports an `analyzeComponent` function with the following signature:
+### MCP Server Integration
 
-```typescript
-interface CompilationResult {
-  success: boolean;
-  hasMemoization: boolean;
-  cacheSize: number | null;
-  errors: Array<{
-    message: string;
-    location: string | null;
-  }>;
-}
-
-async function analyzeComponent(code: string): Promise<CompilationResult>
-```
-
-The function should:
-
-1. **Compile the component code** using the compilation functionality
-   - Use appropriate presets for TypeScript and JSX parsing
-   - Configure the compiler to capture diagnostic messages
-
-2. **Analyze the compiled output** when compilation succeeds:
-   - Check if the output includes memoization imports (the runtime cache helper)
-   - Extract the cache size from the cache initialization constant if present
-   - A cache size of 0 or null indicates no memoization was applied
-
-3. **Extract error information** when compilation fails or bails out:
-   - Collect all bailout and error messages
-   - Include source code locations when available
-   - Format locations as "line:column" or null if unavailable
-
-4. **Return a result object** with:
-   - `success`: true if code compiled without errors/bailouts
-   - `hasMemoization`: true if the compiler added memoization (cache size > 0)
-   - `cacheSize`: the number of memoization slots (null if no memoization)
-   - `errors`: array of error objects with messages and locations
-
-### Test Cases
-
-- Given a simple pure component, the function returns success=true with memoization applied [@test](../test/analyzer.test.ts)
-- Given a component that mutates state directly, the function returns success=false with a bailout error [@test](../test/analyzer.test.ts)
-- Given a component with existing manual memoization, the function returns success=false with a specific bailout about manual memoization [@test](../test/analyzer.test.ts)
-- Given valid code with no optimization opportunities, the function returns success=true with hasMemoization=false and cacheSize=null [@test](../test/analyzer.test.ts)
+- Creates an MCP server with tool registration that accepts code text and optional pass name [@test](../test/mcp-server.test.ts)
 
 ## Implementation
 
-[@generates](./src/analyzer.ts)
+[@generates](./src/index.ts)
 
 ## API
 
 ```typescript { #api }
-export interface CompilationResult {
-  success: boolean;
-  hasMemoization: boolean;
-  cacheSize: number | null;
-  errors: Array<{
-    message: string;
-    location: string | null;
-  }>;
-}
+/**
+ * Compiles React component code using the React Compiler
+ * @param code - The React component source code
+ * @param options - Compilation options including optional pipeline pass to inspect
+ * @returns Compilation result with optimized code and diagnostics
+ */
+export function compile(
+  code: string,
+  options?: { passName?: 'HIR' | 'ReactiveFunction' }
+): Promise<{ code: string | null; diagnostics: string[]; passOutput?: string }>;
 
-export async function analyzeComponent(code: string): Promise<CompilationResult>;
+/**
+ * Initializes an MCP server that exposes the compile function as a tool
+ * @returns McpServer instance ready to accept connections
+ */
+export function initializeMCPServer(): McpServer;
 ```
 
 ## Dependencies { .dependencies }
 
-### @babel/core { .dependency }
+### @modelcontextprotocol/sdk { .dependency }
 
-Provides core Babel transformation capabilities for parsing and transforming JavaScript/TypeScript code.
+Provides the MCP server framework for creating tools accessible by AI assistants. Used to create server instances, register tools with schemas, and handle stdio transport.
 
-[@satisfied-by](@babel/core)
-
-### @babel/parser { .dependency }
-
-Provides parsing capabilities to convert source code into an Abstract Syntax Tree (AST).
-
-[@satisfied-by](@babel/parser)
+[@satisfied-by](@modelcontextprotocol/sdk)
 
 ### babel-plugin-react-compiler { .dependency }
 
-The React Compiler plugin that automatically optimizes React components by inserting memoization.
+The React Compiler plugin that optimizes React components by automatically adding memoization. Provides compilation functions, intermediate representation types, and printer utilities.
 
 [@satisfied-by](babel-plugin-react-compiler)
+
+### @babel/core { .dependency }
+
+Core Babel functionality for parsing and transforming JavaScript/TypeScript code. Used to parse component source and transform it through the compiler pipeline.
+
+[@satisfied-by](@babel/core)
+
+### zod { .dependency }
+
+Schema validation library for TypeScript. Used to define and validate tool input schemas in the MCP server.
+
+[@satisfied-by](zod)

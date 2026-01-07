@@ -1,36 +1,46 @@
 {
-  "context": "This criteria evaluates proficiency in using babel-plugin-react-compiler to analyze React components. It assesses the engineer's ability to configure Babel transformations, integrate the React Compiler plugin, capture compilation diagnostics, and parse compiled output to extract memoization information.",
+  "context": "This evaluation assesses how well the engineer uses the @modelcontextprotocol/sdk and babel-plugin-react-compiler packages to build an MCP tool that exposes React Compiler functionality with pipeline introspection.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "Babel Configuration",
-      "description": "Correctly configures Babel with parseAsync using appropriate parser plugins for TypeScript ('typescript') and JSX ('jsx') to parse React component code",
-      "max_score": "15"
+      "name": "McpServer initialization",
+      "description": "Uses McpServer class from @modelcontextprotocol/sdk to create a server instance with name and version metadata",
+      "max_score": 15
     },
     {
-      "name": "React Compiler Integration",
-      "description": "Correctly integrates babel-plugin-react-compiler into the Babel transformation pipeline using transformFromAstAsync with the plugin in the plugins array",
-      "max_score": "20"
+      "name": "Tool registration",
+      "description": "Uses server.tool() method to register a compilation tool with appropriate name, description, and Zod schema for input validation",
+      "max_score": 15
     },
     {
-      "name": "Diagnostic Capture Setup",
-      "description": "Configures PluginOptions with a logger object that implements the logEvent callback to capture CompileError events and extract error details including reason and location",
-      "max_score": "20"
+      "name": "Zod schema definition",
+      "description": "Defines tool input schema using z.string() for code text and z.enum() or z.optional() for passName parameter with correct enum values ('HIR', 'ReactiveFunction')",
+      "max_score": 10
     },
     {
-      "name": "Error Extraction",
-      "description": "Correctly extracts compilation errors from logged events, formats error messages, and converts SourceLocation objects to 'line:column' string format (e.g., '5:10') or null when location is unavailable",
-      "max_score": "15"
+      "name": "Babel parseAsync usage",
+      "description": "Uses parseAsync from @babel/core with appropriate parserOpts including 'typescript' and 'jsx' plugins to parse React component code",
+      "max_score": 15
     },
     {
-      "name": "Memoization Detection",
-      "description": "Detects memoization in compiled code by checking for the presence of the cache helper import (e.g., 'import { c as _c } from \"react/compiler-runtime\"') in the output",
-      "max_score": "15"
+      "name": "Compiler plugin integration",
+      "description": "Uses BabelPluginReactCompiler from babel-plugin-react-compiler with transformFromAstAsync to compile the parsed AST",
+      "max_score": 15
     },
     {
-      "name": "Cache Size Extraction",
-      "description": "Extracts the cache size from the compiled output by parsing the cache initialization pattern (e.g., 'const $ = _c(5)') and extracting the numeric argument passed to the cache function",
-      "max_score": "15"
+      "name": "Pipeline logging",
+      "description": "Configures PluginOptions with logger.debugLogIRs callback to capture CompilerPipelineValue objects during compilation",
+      "max_score": 15
+    },
+    {
+      "name": "IR printing functions",
+      "description": "Uses printFunctionWithOutlined() for HIR and printReactiveFunctionWithOutlined() for ReactiveFunction to extract intermediate representations based on passName",
+      "max_score": 10
+    },
+    {
+      "name": "Diagnostic extraction",
+      "description": "Captures compilation diagnostics by handling CompileError events in logger.logEvent callback and extracting error messages with source locations",
+      "max_score": 5
     }
   ]
 }
