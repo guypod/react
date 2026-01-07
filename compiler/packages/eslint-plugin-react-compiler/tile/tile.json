@@ -1,0 +1,7 @@
+{
+  "name": "guydemo/eslint-plugin-react-compiler",
+  "version": "0.0.0",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/eslint-plugin-react-compiler@0.0.0",
+  "summary": "ESLint plugin that surfaces problematic React code patterns detected by the React compiler"
+}
