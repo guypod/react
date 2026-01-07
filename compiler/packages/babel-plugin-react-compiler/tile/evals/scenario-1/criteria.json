@@ -1,0 +1,81 @@
+{
+  "context": "This criteria evaluates how effectively an engineer uses the babel-plugin-react-compiler API to configure custom hooks, validation rules, feature gating, and compilation behavior. The focus is exclusively on correct usage of package-specific configuration options and APIs.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Plugin Configuration Structure",
+      "description": "Correctly structures a Babel configuration with babel-plugin-react-compiler in the plugins array, passing configuration options as the second element of a plugin tuple (e.g., ['babel-plugin-react-compiler', options]).",
+      "max_score": 8
+    },
+    {
+      "name": "Custom Hook Definition",
+      "description": "Defines a custom hook 'useDataFetcher' in the environment.customHooks configuration using a Map data structure with the hook name as the key.",
+      "max_score": 12
+    },
+    {
+      "name": "Hook Effect Kind",
+      "description": "Sets the effectKind property correctly for the custom hook to indicate read-only access (e.g., Effect.Read or the string 'Read').",
+      "max_score": 9
+    },
+    {
+      "name": "Hook Value Kind",
+      "description": "Sets the valueKind property correctly for the custom hook to indicate non-constant mutable values (e.g., ValueKind.Mutable or similar appropriate value kind).",
+      "max_score": 9
+    },
+    {
+      "name": "Hook Alias Configuration",
+      "description": "Sets noAlias to true in the custom hook configuration to indicate arguments should not be aliased.",
+      "max_score": 5
+    },
+    {
+      "name": "Hook Data Transitivity",
+      "description": "Sets transitiveMixedData to true in the custom hook configuration to indicate the return value contains JSON-serializable data.",
+      "max_score": 5
+    },
+    {
+      "name": "Ref Validation",
+      "description": "Enables validateRefAccessDuringRender in the environment configuration to validate that refs are not accessed during render.",
+      "max_score": 9
+    },
+    {
+      "name": "Effect Dependency Validation",
+      "description": "Enables validateMemoizedEffectDependencies in the environment configuration to validate that effect dependencies are properly memoized.",
+      "max_score": 8
+    },
+    {
+      "name": "Capitalized Call Validation",
+      "description": "Configures validateNoCapitalizedCalls in the environment to check for unsafe capitalized function calls, using either a boolean true or an object with an allowlist.",
+      "max_score": 5
+    },
+    {
+      "name": "Allowlist Configuration",
+      "description": "If validateNoCapitalizedCalls is an object, includes an allowlist array with the allowed component names: 'App', 'Header', and 'Footer'.",
+      "max_score": 5
+    },
+    {
+      "name": "Gating Configuration",
+      "description": "Configures the gating option as an object with both 'source' and 'importSpecifierName' properties to enable feature-flagged compilation.",
+      "max_score": 5
+    },
+    {
+      "name": "Gating Source Module",
+      "description": "Sets the gating.source property to '@company/feature-flags' to specify the module to import the feature flag from.",
+      "max_score": 5
+    },
+    {
+      "name": "Gating Function Name",
+      "description": "Sets the gating.importSpecifierName property to 'isCompilerEnabled' to specify the named export to use as the gating function.",
+      "max_score": 5
+    },
+    {
+      "name": "Compilation Mode",
+      "description": "Sets the compilationMode option to 'infer' to automatically detect React components and hooks for compilation.",
+      "max_score": 5
+    },
+    {
+      "name": "Panic Threshold",
+      "description": "Sets the panicThreshold option to 'none' to configure the compiler to continue compilation without throwing exceptions on errors.",
+      "max_score": 5
+    }
+  ]
+}
