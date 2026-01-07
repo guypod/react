@@ -1,5 +1,5 @@
 {
-  "name": "guypod/npm-react-mcp-server",
+  "name": "guydemo/npm-react-mcp-server",
   "version": "0.0.1",
   "docs": "docs/index.md",
   "describes": "pkg:npm/react-mcp-server@0.0.0",
