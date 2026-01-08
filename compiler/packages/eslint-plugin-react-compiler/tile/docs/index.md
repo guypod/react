@@ -1,59 +1,25 @@
 # ESLint Plugin React Compiler
 
-ESLint Plugin React Compiler is an ESLint plugin that integrates the React Compiler (formerly React Forget) static analysis capabilities directly into the ESLint workflow. It surfaces problematic React code patterns detected by the compiler, enabling developers to identify and fix optimization issues, violations of React's rules, and other code patterns that prevent the React compiler from effectively optimizing components.
+ESLint plugin that surfaces diagnostics and compilation errors from React Compiler (formerly React Forget) directly in your ESLint workflow. This plugin enables developers to catch React-specific optimizations issues and violations during development by integrating the React Compiler's analysis into ESLint.
 
 ## Package Information
 
 - **Package Name**: eslint-plugin-react-compiler
 - **Package Type**: npm
-- **Language**: TypeScript
+- **Language**: JavaScript/TypeScript
 - **Installation**: `npm install eslint-plugin-react-compiler --save-dev`
-- **Peer Dependencies**: eslint >= 7
-- **Node Version**: ^14.17.0 || ^16.0.0 || >= 18.0.0
+- **Peer Dependencies**: `eslint >= 7`
+- **Node Version**: `^14.17.0 || ^16.0.0 || >= 18.0.0`
 
 ## Core Imports
 
-The plugin exports an ESLint plugin configuration object containing rules.
-
-```javascript
-// In ESLint configuration files
-// The plugin is referenced by name after registration
-module.exports = {
-  plugins: ["react-compiler"],
-  rules: {
-    "react-compiler/react-compiler": "error"
-  }
-};
-```
-
-For programmatic usage:
-
-```javascript
-const eslintPluginReactCompiler = require("eslint-plugin-react-compiler");
-// Access the rule
-const reactCompilerRule = eslintPluginReactCompiler.rules["react-compiler"];
-```
+The plugin is loaded via ESLint configuration and does not require direct imports in your code.
 
 ## Basic Usage
 
-### ESLint Configuration (Flat Config)
+Add the plugin to your ESLint configuration file (`.eslintrc`, `.eslintrc.json`, or `eslint.config.js`):
 
-```javascript
-const reactCompilerPlugin = require("eslint-plugin-react-compiler");
-
-module.exports = [
-  {
-    plugins: {
-      "react-compiler": reactCompilerPlugin
-    },
-    rules: {
-      "react-compiler/react-compiler": "error"
-    }
-  }
-];
-```
-
-### ESLint Configuration (Legacy .eslintrc)
+**JSON Configuration:**
 
 ```json
 {
@@ -64,313 +30,68 @@ module.exports = [
 }
 ```
 
-### With Options
+**JavaScript Configuration:**
 
-```json
-{
-  "rules": {
-    "react-compiler/react-compiler": [
-      "error",
-      {
-        "environment": {
-          "enableChangeDetectionForDebugging": "none"
-        }
-      }
-    ]
+```javascript
+module.exports = {
+  plugins: ["react-compiler"],
+  rules: {
+    "react-compiler/react-compiler": "error"
   }
-}
+};
 ```
+
+The plugin will analyze React code during linting and report compilation errors found by the React Compiler.
 
 ## Capabilities
 
-### Plugin Export
+### Plugin Structure
 
-The main export is an ESLint plugin configuration object.
+The plugin exports a standard ESLint plugin object with rules.
 
-```typescript { .api }
+```javascript { .api }
 /**
- * Main plugin export containing rules
+ * Main plugin export
  */
-interface ESLintPluginReactCompiler {
+const plugin = {
   rules: {
-    "react-compiler": Rule.RuleModule;
-  };
-}
+    "react-compiler": ReactCompilerRule
+  }
+};
 ```
+
+The plugin follows the standard ESLint plugin structure and exports a single rule named `react-compiler`.
 
 ### React Compiler Rule
 
-The `react-compiler` rule runs the React Compiler's static analysis on React components and hooks, reporting errors and providing fix suggestions through ESLint.
+The main rule that integrates React Compiler analysis into ESLint.
 
-```typescript { .api }
+```javascript { .api }
 /**
  * ESLint rule that surfaces diagnostics from React Compiler
+ * Rule name: "react-compiler/react-compiler"
+ *
+ * This rule follows the standard ESLint rule structure with the following metadata:
  */
-interface ReactCompilerRule extends Rule.RuleModule {
+const ReactCompilerRule = {
   meta: {
-    type: "problem";
+    type: "problem",
     docs: {
-      description: "Surfaces diagnostics from React Forget";
-      recommended: true;
-    };
-    fixable: "code";
-    hasSuggestions: true;
-    schema: [{ type: "object"; additionalProperties: true }];
-  };
-  create(context: Rule.RuleContext): {};
-}
-```
-
-The rule's `create` function:
-- Parses source code using Babel parser (for TypeScript) or Hermes parser (for JavaScript)
-- Runs the React Compiler via `babel-plugin-react-compiler`
-- Reports compilation errors via ESLint's context.report()
-- Provides fix suggestions for certain errors
-- Respects Flow suppression comments (`$FlowFixMe[react-rule-hook]`)
-
-### Rule Options
-
-The rule accepts an options object passed as the second element in the rule configuration array.
-
-```typescript { .api }
-/**
- * Configuration options for the react-compiler rule
- */
-interface ReactCompilerRuleOptions {
-  /**
-   * Set of error severity levels that should be reported to ESLint
-   * Default: Set([ErrorSeverity.InvalidReact, ErrorSeverity.InvalidJS])
-   */
-  reportableLevels?: Set<ErrorSeverity>;
-
-  /**
-   * Experimental setting to report all compilation bailouts on the compilation unit
-   * (e.g. function or hook) instead of the offensive line.
-   * Intended for codebases 100% reliant on the compiler for memoization.
-   * Default: false
-   */
-  __unstable_donotuse_reportAllBailouts?: boolean;
-
-  /**
-   * Environment configuration for React Compiler
-   * This is the PartialEnvironmentConfig type from babel-plugin-react-compiler
-   * Validated via validateEnvironmentConfig from babel-plugin-react-compiler
-   * See babel-plugin-react-compiler documentation for available configuration options
-   */
-  environment?: PartialEnvironmentConfig;
-
-  /**
-   * Custom logger for logging compilation events
-   */
-  logger?: Logger;
-
-  /**
-   * All other options from babel-plugin-react-compiler's PluginOptions
-   * are supported and passed through to the compiler
-   */
-  [key: string]: any;
-}
-```
-
-### Error Severity Levels
-
-Error severity levels from `babel-plugin-react-compiler` that can be used with `reportableLevels`.
-
-```typescript { .api }
-/**
- * Error severity levels from babel-plugin-react-compiler
- */
-enum ErrorSeverity {
-  /**
-   * Invalid JavaScript syntax or semantically invalid code
-   */
-  InvalidJS = "InvalidJS",
-
-  /**
-   * Code that breaks the rules of React (e.g., conditional hooks)
-   */
-  InvalidReact = "InvalidReact",
-
-  /**
-   * Incorrect configuration of the compiler
-   */
-  InvalidConfig = "InvalidConfig",
-
-  /**
-   * Code that is valid but unsafe to preserve memoization
-   */
-  CannotPreserveMemoization = "CannotPreserveMemoization",
-
-  /**
-   * Unhandled syntax not yet supported by the compiler
-   */
-  Todo = "Todo",
-
-  /**
-   * Internal compiler error indicating critical issues
-   */
-  Invariant = "Invariant",
-}
-```
-
-### Logger Interface
-
-Custom logger interface for receiving compilation events.
-
-```typescript { .api }
-/**
- * Logger interface from babel-plugin-react-compiler/src/Entrypoint
- */
-interface Logger {
-  /**
-   * Called when a compilation event occurs
-   * @param filename - The file being compiled (may be null)
-   * @param event - The compilation event with details
-   */
-  logEvent(filename: string | null, event: LoggerEvent): void;
-}
-
-/**
- * Logger event types
- */
-type LoggerEvent =
-  | {
-      kind: "CompileError";
-      fnLoc: BabelSourceLocation | null;
-      detail: CompilerErrorDetailOptions;
-    }
-  | {
-      kind: "CompileDiagnostic";
-      fnLoc: BabelSourceLocation | null;
-      detail: Omit<CompilerErrorDetailOptions, "severity" | "suggestions">;
-    }
-  | {
-      kind: "CompileSuccess";
-      fnLoc: BabelSourceLocation | null;
-      fnName: string | null;
-      memoSlots: number;
-      memoBlocks: number;
-      memoValues: number;
-      prunedMemoBlocks: number;
-      prunedMemoValues: number;
-    }
-  | {
-      kind: "PipelineError";
-      fnLoc: BabelSourceLocation | null;
-      data: string;
-    };
-
-/**
- * Compiler error detail structure
- */
-interface CompilerErrorDetailOptions {
-  reason: string;
-  description?: string | null;
-  severity: ErrorSeverity;
-  loc: BabelSourceLocation | null;
-  suggestions?: CompilerSuggestion[] | null;
-}
-```
-
-### Compiler Suggestions
-
-The rule provides automatic fix suggestions for certain compiler errors.
-
-```typescript { .api }
-/**
- * Compiler suggestion operation types
- */
-enum CompilerSuggestionOperation {
-  InsertBefore = 0,
-  InsertAfter = 1,
-  Remove = 2,
-  Replace = 3,
-}
-
-/**
- * Compiler suggestion structure (union type)
- */
-type CompilerSuggestion =
-  | {
-      op:
-        | CompilerSuggestionOperation.InsertAfter
-        | CompilerSuggestionOperation.InsertBefore
-        | CompilerSuggestionOperation.Replace;
-      range: [number, number];
-      description: string;
-      text: string;
-    }
-  | {
-      op: CompilerSuggestionOperation.Remove;
-      range: [number, number];
-      description: string;
-    };
-```
-
-These suggestions are converted to ESLint's suggestion format and made available to users in their editor or CLI output.
-
-## Supported File Types
-
-The rule automatically selects the appropriate parser based on file extension:
-
-- **TypeScript files** (`.ts`, `.tsx`): Uses `@babel/parser` with TypeScript and JSX plugins
-- **JavaScript files** (`.js`, `.jsx`): Uses `hermes-parser` with experimental component syntax support
-
-Both parsers are configured to:
-- Parse in module mode
-- Support JSX syntax
-- Enable experimental React component syntax
-- Parse with Babel-compatible AST format
-
-## Error Reporting Behavior
-
-### Default Behavior
-
-By default, the rule reports errors with severity levels:
-- `ErrorSeverity.InvalidReact`: Violations of React rules (e.g., conditional hooks)
-- `ErrorSeverity.InvalidJS`: Invalid JavaScript patterns that prevent compilation
-
-### Flow Suppression
-
-The rule respects Flow suppression comments. If a line has a `$FlowFixMe[react-rule-hook]` comment on the preceding line, the error will not be reported by ESLint (assuming Flow already caught it).
-
-```javascript
-function useHookWithHook() {
-  if (cond) {
-    // $FlowFixMe[react-rule-hook]
-    useConditionalHook(); // Error suppressed
+      description: "Surfaces diagnostics from React Forget",
+      recommended: true
+    },
+    fixable: "code",
+    hasSuggestions: true,
+    schema: [{ type: "object", additionalProperties: true }]
+  },
+  create: function(context) {
+    // Rule implementation - parses and analyzes React code
+    // using babel-plugin-react-compiler
   }
-}
+};
 ```
 
-### Experimental Bailout Reporting
-
-When `__unstable_donotuse_reportAllBailouts` is enabled, all compilation bailouts are reported on the first line of the compilation unit (function or hook) with a message indicating the location of the actual issue.
-
-```javascript
-// With __unstable_donotuse_reportAllBailouts: true
-function MyComponent() {  // Error reported here
-  if (cond) {
-    useHook(); // Actual issue at line X:Y
-  }
-}
-// Error message: [ReactCompilerBailout] <reason> (@:X:Y)
-```
-
-## Integration with React Compiler
-
-The plugin integrates with `babel-plugin-react-compiler` by:
-
-1. **Parsing**: Converting source code to Babel AST
-2. **Transforming**: Running the React Compiler via Babel transform with `noEmit: true` and `panicThreshold: 'none'`
-3. **Logging**: Capturing compilation errors via a custom logger injected into the compiler options
-4. **Reporting**: Converting compiler errors to ESLint reports with suggestions
-
-The compiler runs in analysis-only mode (`noEmit: true`), meaning it checks the code but doesn't modify it through the ESLint rule itself. Modifications are only applied when users accept fix suggestions.
-
-## Common Usage Patterns
-
-### Basic Error Reporting
+**Usage in ESLint config:**
 
 ```json
 {
@@ -380,11 +101,58 @@ The compiler runs in analysis-only mode (`noEmit: true`), meaning it checks the 
 }
 ```
 
-Reports `InvalidReact` and `InvalidJS` errors as ESLint errors.
+### Rule Options
 
-### Custom Error Levels
+The rule accepts an options object to customize behavior.
+
+```javascript { .api }
+/**
+ * Configuration options for the react-compiler rule
+ */
+interface RuleOptions {
+  /**
+   * Set of error severity levels to report as ESLint errors
+   * Default: Set containing ErrorSeverity.InvalidReact and ErrorSeverity.InvalidJS
+   */
+  reportableLevels?: Set<ErrorSeverity>;
+
+  /**
+   * EXPERIMENTAL: Report all compilation bailouts on the function/hook level
+   * instead of on the specific line causing the issue
+   * Default: false
+   * Warning: This is an unstable API and may change
+   */
+  __unstable_donotuse_reportAllBailouts?: boolean;
+
+  /**
+   * React Compiler plugin options (passed through to babel-plugin-react-compiler)
+   * See babel-plugin-react-compiler documentation for available options
+   */
+  environment?: EnvironmentConfig;
+  logger?: Logger;
+  // Additional babel-plugin-react-compiler options...
+}
+```
+
+**Basic configuration with options:**
+
+```json
+{
+  "rules": {
+    "react-compiler/react-compiler": [
+      "error",
+      {
+        "reportableLevels": "custom Set of ErrorSeverity values"
+      }
+    ]
+  }
+}
+```
+
+**Example with reportableLevels:**
 
 ```javascript
+// In a JavaScript config file where you can use JavaScript objects
 const { ErrorSeverity } = require("babel-plugin-react-compiler/src");
 
 module.exports = {
@@ -394,8 +162,8 @@ module.exports = {
       {
         reportableLevels: new Set([
           ErrorSeverity.InvalidReact,
-          ErrorSeverity.InvalidJS
-          // Add other severity levels as needed
+          ErrorSeverity.InvalidJS,
+          ErrorSeverity.Todo
         ])
       }
     ]
@@ -403,49 +171,13 @@ module.exports = {
 };
 ```
 
-### With Custom Environment
+**Example with experimental bailout reporting:**
 
 ```json
 {
   "rules": {
     "react-compiler/react-compiler": [
       "error",
-      {
-        "environment": {
-          "enableChangeDetectionForDebugging": "none"
-        }
-      }
-    ]
-  }
-}
-```
-
-### With Custom Logger
-
-```javascript
-module.exports = {
-  rules: {
-    "react-compiler/react-compiler": [
-      "error",
-      {
-        logger: {
-          logEvent(filename, event) {
-            console.log(`[${filename}]`, event);
-          }
-        }
-      }
-    ]
-  }
-};
-```
-
-### Bailout Tracking for Performance Debugging
-
-```json
-{
-  "rules": {
-    "react-compiler/react-compiler": [
-      "warn",
       {
         "__unstable_donotuse_reportAllBailouts": true
       }
@@ -454,126 +186,389 @@ module.exports = {
 }
 ```
 
-Use this configuration when you need compilation success signals for performance debugging in codebases that rely entirely on the React Compiler for memoization.
+### Error Severity Levels
 
-## Types
+Error severity levels determine which types of React Compiler diagnostics are reported.
 
-### Source Location Type
-
-```typescript { .api }
+```javascript { .api }
 /**
- * Babel source location type
- * From @babel/types
+ * Error severity levels from babel-plugin-react-compiler
+ * Used in reportableLevels configuration
  */
-interface BabelSourceLocation {
-  start: {
-    line: number;
-    column: number;
-  };
-  end: {
-    line: number;
-    column: number;
-  };
+enum ErrorSeverity {
+  /**
+   * Invalid React code that violates React rules
+   * Default: reported
+   */
+  InvalidReact,
+
+  /**
+   * Invalid JavaScript code
+   * Default: reported
+   */
+  InvalidJS,
+
+  /**
+   * Unimplemented features or TODOs in the compiler
+   * Default: not reported
+   */
+  Todo,
+
+  // Additional severity levels may be available in babel-plugin-react-compiler
 }
 ```
 
-### Environment Config Type
+**Note:** These severity levels are defined in `babel-plugin-react-compiler` and are re-exported for use in the ESLint plugin configuration.
 
-```typescript { .api }
+### Environment Configuration
+
+Environment configuration for React Compiler can be passed through the rule options.
+
+```javascript { .api }
 /**
- * Environment configuration type from babel-plugin-react-compiler
- * This is a complex configuration object with many optional boolean and nullable fields
- * that control various aspects of the React Compiler's behavior.
- *
- * Common options include:
- * - enableChangeDetectionForDebugging: Controls change detection for debugging
- * - validateHooksUsage: Validates hooks follow the rules of React
- * - validateRefAccessDuringRender: Validates ref access patterns
- * - And many more compilation and validation options
- *
- * For the complete list of available options, refer to the babel-plugin-react-compiler
- * documentation or source code (HIR/Environment.ts).
+ * Environment configuration for React Compiler
+ * Passed through to babel-plugin-react-compiler
+ * See babel-plugin-react-compiler documentation for detailed configuration options
  */
-type PartialEnvironmentConfig = Partial<{
-  // Configuration options from babel-plugin-react-compiler
-  // This type accepts any valid EnvironmentConfig options
-  [key: string]: any;
-}>;
+interface EnvironmentConfig {
+  // Configuration options defined in babel-plugin-react-compiler
+  // These control how the React Compiler analyzes and optimizes code
+}
 ```
 
-### ESLint Rule Context
+**Usage:**
 
-The rule receives an ESLint Rule.RuleContext with the following relevant properties:
+```javascript
+module.exports = {
+  rules: {
+    "react-compiler/react-compiler": [
+      "error",
+      {
+        environment: {
+          // Environment configuration options
+        }
+      }
+    ]
+  }
+};
+```
 
-```typescript { .api }
+### Custom Logger
+
+A custom logger can be provided to receive compilation events.
+
+```javascript { .api }
 /**
- * ESLint Rule Context (from 'eslint' package)
+ * Logger interface for receiving React Compiler events
+ * Passed through to babel-plugin-react-compiler
  */
-interface RuleContext {
+interface Logger {
   /**
-   * Source code object (ESLint 8.0+)
+   * Log a compilation event
+   * @param filename - The file being compiled
+   * @param event - The compilation event with details
    */
-  sourceCode?: {
-    text: string;
-  };
-
-  /**
-   * Get source code (ESLint < 8.0)
-   */
-  getSourceCode(): {
-    text: string;
-    getAllComments(): Array<{ value: string; loc: BabelSourceLocation }>;
-  };
-
-  /**
-   * Filename being linted (ESLint 8.0+)
-   */
-  filename?: string;
-
-  /**
-   * Get filename (ESLint < 8.0)
-   */
-  getFilename(): string;
-
-  /**
-   * Rule options array
-   */
-  options: any[];
-
-  /**
-   * Report an error or warning
-   */
-  report(descriptor: {
-    message: string;
-    loc: BabelSourceLocation;
-    suggest?: Array<{
-      desc: string;
-      fix(fixer: RuleFixer): any;
-    }>;
-  }): void;
+  logEvent(filename: string, event: CompilerEvent): void;
 }
 
 /**
- * ESLint Rule Fixer
+ * Compilation event from React Compiler
  */
-interface RuleFixer {
-  insertTextBeforeRange(range: [number, number], text: string): any;
-  insertTextAfterRange(range: [number, number], text: string): any;
-  replaceTextRange(range: [number, number], text: string): any;
-  removeRange(range: [number, number]): any;
+interface CompilerEvent {
+  kind: "CompileError" | "CompileSuccess" | string;
+  detail?: CompilerErrorDetail;
+  fnLoc?: SourceLocation;
+}
+
+/**
+ * Details about a compilation error
+ */
+interface CompilerErrorDetail {
+  severity: ErrorSeverity;
+  reason: string;
+  loc?: SourceLocation;
+  suggestions?: Array<CompilerSuggestion>;
+}
+
+/**
+ * Source location in code
+ */
+interface SourceLocation {
+  start: { line: number; column: number };
+  end: { line: number; column: number };
 }
 ```
+
+**Usage:**
+
+```javascript
+const customLogger = {
+  logEvent(filename, event) {
+    console.log(`Compilation event in ${filename}:`, event);
+  }
+};
+
+module.exports = {
+  rules: {
+    "react-compiler/react-compiler": [
+      "error",
+      {
+        logger: customLogger
+      }
+    ]
+  }
+};
+```
+
+### Fix Suggestions
+
+The rule provides automatic fix suggestions for certain errors.
+
+```javascript { .api }
+/**
+ * Suggestion operations that can be applied to fix issues
+ * These are automatically generated by the React Compiler and surfaced through ESLint
+ */
+enum CompilerSuggestionOperation {
+  /** Insert text before a specific range */
+  InsertBefore,
+  /** Insert text after a specific range */
+  InsertAfter,
+  /** Replace text in a specific range */
+  Replace,
+  /** Remove text in a specific range */
+  Remove
+}
+
+/**
+ * A fix suggestion for a compilation error
+ */
+interface CompilerSuggestion {
+  op: CompilerSuggestionOperation;
+  description: string;
+  range: [number, number];
+  text: string;
+}
+```
+
+When ESLint reports an error, it may include suggestions that can be applied automatically or manually. These suggestions are generated by the React Compiler and transformed into ESLint suggestion format.
+
+### Flow Suppression Support
+
+The plugin respects Flow suppression comments.
+
+**Flow suppression pattern:**
+
+```javascript
+function useHookWithHook() {
+  if (cond) {
+    // $FlowFixMe[react-rule-hook]
+    useConditionalHook();
+  }
+}
+```
+
+If a Flow suppression comment with `$FlowFixMe[react-rule-hook]` is present on the line immediately before an error, the plugin will skip reporting that error, assuming Flow has already caught it.
+
+### Parser Support
+
+The plugin automatically selects the appropriate parser based on file extension:
+
+- **TypeScript files (`.ts`, `.tsx`)**: Uses `@babel/parser` with TypeScript and JSX plugins
+- **JavaScript files (`.js`, `.jsx`)**: Uses `hermes-parser` with experimental component syntax support
+
+No additional parser configuration is required in most cases.
+
+### Experimental Component Syntax
+
+The plugin supports React's experimental component syntax when parsing with hermes-parser:
+
+```javascript
+component HelloWorld(text: string = "Hello!", onClick: () => void) {
+  return <div onClick={onClick}>{text}</div>;
+}
+```
+
+This syntax is automatically enabled when using JavaScript files.
 
 ## Dependencies
 
 The plugin has the following runtime dependencies:
 
-- **@babel/core**: Babel transformation engine
-- **@babel/parser**: Babel JavaScript/TypeScript parser
-- **@babel/plugin-proposal-private-methods**: Babel plugin for private methods
-- **hermes-parser**: Hermes JavaScript parser
-- **zod**: Schema validation library
-- **zod-validation-error**: Zod error formatting
-- **babel-plugin-react-compiler**: The React Compiler Babel plugin (peer or bundled dependency)
+- `@babel/core` - For AST transformation
+- `@babel/parser` - For parsing TypeScript files
+- `@babel/plugin-proposal-private-methods` - For handling private class methods
+- `hermes-parser` - For parsing JavaScript files with experimental syntax
+- `zod` and `zod-validation-error` - For option validation
+- `babel-plugin-react-compiler` (peer dependency) - The React Compiler that performs the actual analysis
 
-The plugin internally uses `@babel/parser` for TypeScript files and `hermes-parser` for JavaScript files, with `babel-plugin-react-compiler` providing the actual compilation and error detection logic.
+**Note:** The plugin internally uses `babel-plugin-react-compiler` to perform code analysis. The plugin acts as a bridge between the React Compiler and ESLint.
+
+## Common Error Messages
+
+The plugin will surface various error messages from the React Compiler:
+
+### Invalid React Patterns
+
+**Mutating props:**
+```
+Mutating component props or hook arguments is not allowed. Consider using a local variable instead
+```
+
+**ESLint suppressions:**
+```
+React Compiler has skipped optimizing this component because one or more React ESLint rules were disabled. React Compiler only works when your components follow all the rules of React, disabling them may result in unexpected or incorrect behavior
+```
+
+### Compilation Bailouts
+
+When using `__unstable_donotuse_reportAllBailouts`:
+```
+[ReactCompilerBailout] (BuildHIR::lowerStatement) Handle var kinds in VariableDeclaration (@:3:2)
+```
+
+### Unsupported Syntax
+
+Various messages about unsupported JavaScript or React patterns that the compiler cannot optimize.
+
+## Integration with React Compiler
+
+This plugin is designed to work with the React Compiler (babel-plugin-react-compiler). It:
+
+1. Parses your React code using Babel or Hermes parsers
+2. Runs the React Compiler transformation on the AST
+3. Captures compilation errors and diagnostics via a custom logger
+4. Reports issues as ESLint errors with fix suggestions
+5. Supports Flow suppression comments to avoid duplicate reporting
+
+The plugin configures the React Compiler with:
+- `noEmit: true` - Does not emit transformed code, only performs analysis
+- `panicThreshold: 'none'` - Reports all errors without panicking
+
+## Best Practices
+
+### Configuration Recommendations
+
+1. **Start with default severity levels**: The default `reportableLevels` (InvalidReact and InvalidJS) are suitable for most projects.
+
+2. **Use error level**: Configure the rule as "error" to ensure React Compiler issues are treated seriously:
+   ```json
+   {
+     "rules": {
+       "react-compiler/react-compiler": "error"
+     }
+   }
+   ```
+
+3. **Avoid the experimental bailout flag**: The `__unstable_donotuse_reportAllBailouts` option is intended only for codebases that are 100% reliant on the React Compiler for memoization.
+
+### Workflow Integration
+
+1. **Add to CI/CD**: Include ESLint with this plugin in your continuous integration pipeline to catch issues early.
+
+2. **Pre-commit hooks**: Use tools like Husky to run ESLint with this plugin before commits.
+
+3. **IDE integration**: Configure your IDE to run ESLint automatically for real-time feedback.
+
+### Troubleshooting
+
+1. **No errors reported**: Ensure the React Compiler is properly installed as a peer dependency.
+
+2. **Parser errors**: The plugin automatically selects parsers, but if you have custom parser configuration in ESLint, it may conflict.
+
+3. **Performance concerns**: For large codebases, consider running the rule only on changed files during development.
+
+## Example Configurations
+
+### Minimal Configuration
+
+```json
+{
+  "plugins": ["react-compiler"],
+  "rules": {
+    "react-compiler/react-compiler": "error"
+  }
+}
+```
+
+### Configuration with Custom Severity Levels
+
+```javascript
+const { ErrorSeverity } = require("babel-plugin-react-compiler/src");
+
+module.exports = {
+  plugins: ["react-compiler"],
+  rules: {
+    "react-compiler/react-compiler": [
+      "error",
+      {
+        reportableLevels: new Set([
+          ErrorSeverity.InvalidReact,
+          ErrorSeverity.InvalidJS,
+          ErrorSeverity.Todo
+        ])
+      }
+    ]
+  }
+};
+```
+
+### Configuration with Custom Logger
+
+```javascript
+const fs = require("fs");
+const path = require("path");
+
+const customLogger = {
+  logEvent(filename, event) {
+    const logFile = path.join(__dirname, "react-compiler.log");
+    fs.appendFileSync(
+      logFile,
+      `${new Date().toISOString()} - ${filename}: ${JSON.stringify(event)}\n`
+    );
+  }
+};
+
+module.exports = {
+  plugins: ["react-compiler"],
+  rules: {
+    "react-compiler/react-compiler": [
+      "error",
+      {
+        logger: customLogger
+      }
+    ]
+  }
+};
+```
+
+### Configuration with Environment Options
+
+```javascript
+module.exports = {
+  plugins: ["react-compiler"],
+  rules: {
+    "react-compiler/react-compiler": [
+      "error",
+      {
+        environment: {
+          // React Compiler environment configuration
+          // Refer to babel-plugin-react-compiler documentation for available options
+        }
+      }
+    ]
+  }
+};
+```
+
+## Limitations
+
+1. **Experimental status**: This plugin is in experimental stage (version 0.0.0-experimental) and APIs may change.
+
+2. **React Compiler dependency**: Requires babel-plugin-react-compiler to be installed and properly configured.
+
+3. **Parser limitations**: Automatic parser selection works for most cases, but custom ESLint parser configurations may interfere.
+
+4. **Performance**: Running React Compiler analysis on every lint can be slow for large files or projects.
+
+5. **Error reporting**: The plugin can only report errors that the React Compiler detects; it does not perform independent React analysis.

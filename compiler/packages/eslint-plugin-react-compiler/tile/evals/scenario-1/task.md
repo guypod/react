@@ -1,71 +1,81 @@
-# React Compiler Lint Configuration
+# Compiler Diagnostics Monitor
 
-Build a custom ESLint configuration module that leverages advanced features of the React compiler plugin to provide detailed compilation metrics and configurable error reporting for a React application.
+Build a monitoring tool that tracks React compiler diagnostics using an ESLint plugin integration.
 
-## Objective
+## Problem Description
 
-Create a configuration module that integrates the React compiler ESLint plugin with custom logging, selective error severity reporting, and compilation success metrics tracking.
+Create a system that uses an ESLint plugin to monitor React compiler diagnostics. The tool should:
+- Track compilation events through a custom logger
+- Collect metrics about compilation successes and failures
+- Configure which error severity levels are reported
+
+The system should provide visibility into React compiler performance across a codebase.
 
 ## Requirements
 
-### Core Functionality
+### Configuration Setup
 
-Your module should export a function `createReactCompilerConfig` that accepts configuration options and returns an ESLint rule configuration object.
+Create an ESLint configuration that:
+- Includes the React compiler plugin
+- Configures the rule with custom reportable error severity levels
+- Allows specifying a custom logger for event tracking
 
-#### Configuration Options
+### Logger Implementation
 
-The function should accept an options object with the following properties:
+Implement a logger that:
+- Receives compilation events (successes, errors, diagnostics)
+- Stores event data including filenames and event details
+- Provides methods to retrieve all captured events
+- Calculates statistics (total compilations, success count, error count)
 
-- `severityLevels`: An array of strings specifying which error severity levels to report (e.g., `['InvalidReact', 'InvalidJS']`)
-- `enableMetrics`: A boolean indicating whether to track compilation success metrics
-- `onCompilationComplete`: An optional callback function that receives compilation results
+### Event Types to Handle
 
-#### Metrics Tracking
+- Compilation successes with memoization metrics (slots, blocks, values)
+- Compilation errors with severity levels (InvalidReact, InvalidJS, etc.)
+- File and location information for each event
 
-When `enableMetrics` is true, the module should:
+## Test Cases
 
-- Track successful compilations
-- Record the number of memoized values for each successful compilation
-- Record the function or component name being compiled
-- Pass this information to the `onCompilationComplete` callback if provided
+### Configuration Test
 
-#### Error Reporting
+- Creates an ESLint configuration with the plugin and rule settings [@test](./test/config.test.js)
 
-The module should:
+### Logger Test
 
-- Convert the severity level strings to the appropriate internal format
-- Configure the plugin to report only the specified severity levels
-- Handle errors gracefully if invalid severity levels are provided
+- Logger captures and stores compilation events correctly [@test](./test/logger.test.js)
 
-### Test Cases
+### Statistics Test
 
-- Creates configuration with default severity levels [@test](./config.test.js)
-- Creates configuration with custom severity levels [@test](./config.test.js)
-- Tracks compilation metrics when enabled [@test](./config.test.js)
-- Invokes callback with compilation results [@test](./config.test.js)
+- Calculates compilation statistics from captured events [@test](./test/stats.test.js)
 
 ## Implementation
 
-[@generates](./src/config.js)
+[@generates](./src/index.js)
 
 ## API
 
 ```javascript { #api }
-/**
- * Creates an ESLint rule configuration for the React compiler plugin
- * @param {Object} options - Configuration options
- * @param {string[]} options.severityLevels - Array of error severity level names
- * @param {boolean} options.enableMetrics - Whether to track compilation metrics
- * @param {Function} options.onCompilationComplete - Callback for compilation results
- * @returns {Array} ESLint rule configuration array [severity, options]
- */
-export function createReactCompilerConfig(options);
+// Create an ESLint configuration that includes the compiler plugin
+export function createCompilerConfig(options);
+
+// Logger implementation for tracking compilation events
+export class CompilationLogger {
+  constructor();
+  logEvent(filename, event);
+  getEvents();
+  getStats();
+}
+
+// Get error severity constants
+export function getErrorSeverities();
 ```
 
 ## Dependencies { .dependencies }
 
 ### eslint-plugin-react-compiler { .dependency }
 
-Provides React compiler integration for ESLint.
+Provides React compiler integration and diagnostics reporting.
 
-This package is available from npm: `eslint-plugin-react-compiler`
+### eslint { .dependency }
+
+Core ESLint functionality for linting configuration.

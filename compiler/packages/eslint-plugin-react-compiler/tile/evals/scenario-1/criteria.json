@@ -1,26 +1,36 @@
 {
-  "context": "This criteria evaluates how well the engineer uses eslint-plugin-react-compiler's advanced features to build a configuration module. The assessment focuses on proper usage of the plugin's error severity configuration, custom logger integration, and metrics tracking capabilities.",
+  "context": "This evaluation assesses how effectively the engineer uses eslint-plugin-react-compiler to build a monitoring system that tracks React compiler diagnostics, focusing on proper rule configuration, logger integration, and event handling specific to this package's API.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "Error Severity Configuration",
-      "description": "Uses ErrorSeverity enum to create a Set for the reportableLevels option. Should import ErrorSeverity from 'babel-plugin-react-compiler/src' and convert the severity level string array to a Set of ErrorSeverity values (e.g., ErrorSeverity.InvalidReact, ErrorSeverity.InvalidJS).",
-      "max_score": "25"
+      "name": "Plugin Configuration",
+      "description": "Correctly imports and includes 'eslint-plugin-react-compiler' (or 'react-compiler' with the eslint-plugin- prefix omitted) in the ESLint plugins array",
+      "max_score": 15
     },
     {
-      "name": "Logger Interface Implementation",
-      "description": "Implements a custom logger object with a logEvent method that conforms to the Logger interface. The logger should handle different event kinds including 'CompileSuccess' and 'CompileError' appropriately.",
-      "max_score": "30"
+      "name": "Rule Setup",
+      "description": "Configures the 'react-compiler/react-compiler' rule in the ESLint rules section with appropriate options object",
+      "max_score": 15
     },
     {
-      "name": "Metrics Extraction",
-      "description": "Correctly extracts compilation metrics from CompileSuccess events. Should access event.memoValues for memoized value count and event.fnName for the function/component name when event.kind === 'CompileSuccess'.",
-      "max_score": "25"
+      "name": "reportableLevels Configuration",
+      "description": "Uses the 'reportableLevels' option with a Set containing ErrorSeverity enum values (e.g., ErrorSeverity.InvalidReact, ErrorSeverity.InvalidJS, ErrorSeverity.Todo) to control which error severities are reported",
+      "max_score": 20
     },
     {
-      "name": "Rule Configuration Format",
-      "description": "Returns a properly formatted ESLint rule configuration array with ['error', options] where options contains the reportableLevels Set and logger object. The configuration should be compatible with the react-compiler/react-compiler rule.",
-      "max_score": "20"
+      "name": "Logger Integration",
+      "description": "Implements a custom logger object with a 'logEvent' method that accepts (filename, event) parameters and passes it to the rule via the 'logger' option",
+      "max_score": 25
+    },
+    {
+      "name": "Event Handling",
+      "description": "Correctly handles different LoggerEvent types (CompileSuccess, CompileError, CompileDiagnostic, PipelineError) by checking the event.kind property and extracting relevant data from each event type",
+      "max_score": 15
+    },
+    {
+      "name": "Statistics Calculation",
+      "description": "Aggregates compilation statistics from captured events, such as counting successful compilations vs errors, and optionally extracting memoization metrics (memoSlots, memoBlocks, memoValues) from CompileSuccess events",
+      "max_score": 10
     }
   ]
 }

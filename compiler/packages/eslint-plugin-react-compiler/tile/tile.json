@@ -2,6 +2,6 @@
   "name": "guydemo/eslint-plugin-react-compiler",
   "version": "0.0.0",
   "docs": "docs/index.md",
-  "describes": "pkg:npm/eslint-plugin-react-compiler@0.0.0",
-  "summary": "ESLint plugin that surfaces problematic React code patterns detected by the React compiler"
+  "describes": "pkg:npm/eslint-plugin-react-compiler@0.0.0-experimental-9ed098e-20240725",
+  "summary": "ESLint plugin to display errors found by the React compiler."
 }
