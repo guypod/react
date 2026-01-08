@@ -1,0 +1,36 @@
+{
+  "context": "This evaluation assesses how effectively the engineer uses the make-read-only-util package to implement a mutation tracking system. The focus is exclusively on correct usage of the package's API, including the buildMakeReadOnly factory function, violation logging mechanism, and advanced features like class filtering and property descriptor handling.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses buildMakeReadOnly",
+      "description": "Imports and calls buildMakeReadOnly from make-read-only-util package as the core implementation mechanism",
+      "max_score": "20"
+    },
+    {
+      "name": "Correct logger parameter",
+      "description": "Passes a logger/handler function as the first parameter to buildMakeReadOnly that matches the ROViolationLogger type signature (violation, source, key, value?)",
+      "max_score": "15"
+    },
+    {
+      "name": "Class filtering parameter",
+      "description": "Passes the excludedClasses/skippedClasses array as the second parameter to buildMakeReadOnly to enable class-based filtering",
+      "max_score": "15"
+    },
+    {
+      "name": "Returns makeReadOnly function",
+      "description": "Correctly returns the function produced by buildMakeReadOnly, which takes a value and source string and returns the wrapped value",
+      "max_score": "15"
+    },
+    {
+      "name": "Maps violation types",
+      "description": "Correctly maps the four package violation types (FORGET_MUTATE_IMMUT, FORGET_DELETE_PROP_IMMUT, FORGET_CHANGE_PROP_IMMUT, FORGET_ADD_PROP_IMMUT) to the spec's types (MUTATE, DELETE, CHANGE, ADD)",
+      "max_score": "20"
+    },
+    {
+      "name": "Handler integration",
+      "description": "Integrates the custom ViolationHandler by wrapping it in the ROViolationLogger to properly forward violation events with correct parameters",
+      "max_score": "15"
+    }
+  ]
+}
