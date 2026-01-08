@@ -1,36 +1,36 @@
 {
-  "context": "This evaluation assesses how effectively the engineer uses eslint-plugin-react-compiler to build a monitoring system that tracks React compiler diagnostics, focusing on proper rule configuration, logger integration, and event handling specific to this package's API.",
+  "context": "This criteria evaluates how well the engineer understands and uses the eslint-plugin-react-compiler package to configure the React Compiler ESLint rule with advanced options including severity level filtering and experimental bailout reporting modes.",
   "type": "weighted_checklist",
   "checklist": [
     {
-      "name": "Plugin Configuration",
-      "description": "Correctly imports and includes 'eslint-plugin-react-compiler' (or 'react-compiler' with the eslint-plugin- prefix omitted) in the ESLint plugins array",
+      "name": "Plugin registration",
+      "description": "Correctly adds 'react-compiler' to the plugins array in the ESLint configuration object",
       "max_score": 15
     },
     {
-      "name": "Rule Setup",
-      "description": "Configures the 'react-compiler/react-compiler' rule in the ESLint rules section with appropriate options object",
+      "name": "Rule configuration",
+      "description": "Correctly configures the 'react-compiler/react-compiler' rule with 'error' severity level in the rules object",
       "max_score": 15
     },
     {
-      "name": "reportableLevels Configuration",
-      "description": "Uses the 'reportableLevels' option with a Set containing ErrorSeverity enum values (e.g., ErrorSeverity.InvalidReact, ErrorSeverity.InvalidJS, ErrorSeverity.Todo) to control which error severities are reported",
+      "name": "ErrorSeverity enum import",
+      "description": "Imports the ErrorSeverity enum from babel-plugin-react-compiler/src (the underlying compiler package used by eslint-plugin-react-compiler) to access InvalidReact, InvalidJS, and Todo severity levels",
       "max_score": 20
     },
     {
-      "name": "Logger Integration",
-      "description": "Implements a custom logger object with a 'logEvent' method that accepts (filename, event) parameters and passes it to the rule via the 'logger' option",
+      "name": "reportableLevels Set creation",
+      "description": "Creates a Set containing ErrorSeverity enum values (InvalidReact, InvalidJS, Todo) and includes it in the rule options under the reportableLevels property",
       "max_score": 25
     },
     {
-      "name": "Event Handling",
-      "description": "Correctly handles different LoggerEvent types (CompileSuccess, CompileError, CompileDiagnostic, PipelineError) by checking the event.kind property and extracting relevant data from each event type",
-      "max_score": 15
+      "name": "Bailout reporting option",
+      "description": "Correctly sets the __unstable_donotuse_reportAllBailouts option to true in the rule options when bailout reporting is enabled",
+      "max_score": 20
     },
     {
-      "name": "Statistics Calculation",
-      "description": "Aggregates compilation statistics from captured events, such as counting successful compilations vs errors, and optionally extracting memoization metrics (memoSlots, memoBlocks, memoValues) from CompileSuccess events",
-      "max_score": 10
+      "name": "Default severity handling",
+      "description": "Uses the default severity levels (ErrorSeverity.InvalidReact and ErrorSeverity.InvalidJS) when no severity levels are provided, matching the plugin's default behavior",
+      "max_score": 5
     }
   ]
 }
