@@ -1,0 +1,36 @@
+{
+  "context": "This criteria evaluates the engineer's proficiency in using the react-compiler-healthcheck package API to build a custom check module. It assesses understanding of the check module interface pattern, regex-based pattern detection, stateful data aggregation, and console output formatting with the chalk library.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Module Interface Implementation",
+      "description": "Exports a default object with both run() and report() methods matching the CheckModule interface. The run method accepts source: string and path: string parameters. The report method has no parameters and returns void.",
+      "max_score": 20
+    },
+    {
+      "name": "File Extension Filtering",
+      "description": "Uses regular expression to filter files by extension in the run() method, processing only .js, .jsx, .ts, and .tsx files while ignoring other file types.",
+      "max_score": 15
+    },
+    {
+      "name": "Hook Pattern Detection",
+      "description": "Implements regular expression to detect React Hook patterns: function names starting with 'use' followed by an uppercase letter and called as functions (with opening parenthesis). Correctly identifies both built-in Hooks (useState, useEffect, useContext) and custom Hooks.",
+      "max_score": 25
+    },
+    {
+      "name": "Stateful Data Aggregation",
+      "description": "Uses module-level state (variables declared outside the exported object) to collect Hook usage data across multiple run() calls. Maintains counts for each Hook type and tracks the number of files containing Hooks.",
+      "max_score": 20
+    },
+    {
+      "name": "Chalk Output Formatting",
+      "description": "Uses chalk library methods (chalk.green and chalk.red) to format console output in the report() method. Displays file count in green when Hooks are found, red when no Hooks found.",
+      "max_score": 10
+    },
+    {
+      "name": "Hook Count Reporting",
+      "description": "In the report() method, outputs the count of each Hook type found across all files. Lists each Hook name with its total count, formatted as 'HookName: count'.",
+      "max_score": 10
+    }
+  ]
+}

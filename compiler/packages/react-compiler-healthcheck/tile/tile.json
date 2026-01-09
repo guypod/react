@@ -1,0 +1,8 @@
+{
+  "name": "guydemo/react-compiler-healthcheck",
+  "version": "0.0.0",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/react-compiler-healthcheck@0.0.0-experimental-ab3118d-20240725",
+  "summary": "Health check script to test violations of the rules of react.",
+  "private": true
+}
