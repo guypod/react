@@ -1,0 +1,8 @@
+{
+  "name": "guydemo/react-compiler-runtime",
+  "version": "0.0.1",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/react-compiler-runtime@0.0.1",
+  "summary": "Runtime support for React Compiler providing memoization polyfills, hook validation guards, and performance monitoring for compiled React components.",
+  "private": true
+}

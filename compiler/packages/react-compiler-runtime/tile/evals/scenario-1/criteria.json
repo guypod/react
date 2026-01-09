@@ -1,0 +1,41 @@
+{
+  "context": "This criteria evaluates how well the engineer uses react-compiler-runtime's instrumentation APIs to implement a performance debugging tool. The focus is on correct usage of renderCounterRegistry, clearRenderCounterRegistry, and $structuralCheck functions to build a comprehensive debugging utility.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses renderCounterRegistry",
+      "description": "Uses the renderCounterRegistry Map from react-compiler-runtime to access render counter data for tracking component renders",
+      "max_score": "20"
+    },
+    {
+      "name": "Registry manipulation",
+      "description": "Correctly adds entries to renderCounterRegistry with proper structure (Map<string, Set<{count: number}>>), tracking individual counter objects for each component",
+      "max_score": "15"
+    },
+    {
+      "name": "Uses clearRenderCounterRegistry",
+      "description": "Uses the clearRenderCounterRegistry function from react-compiler-runtime to reset all counters to 0",
+      "max_score": "10"
+    },
+    {
+      "name": "Counter increment logic",
+      "description": "Implements proper counter increment logic that initializes to 0 on first call and increments on subsequent calls for each component",
+      "max_score": "15"
+    },
+    {
+      "name": "Uses $structuralCheck",
+      "description": "Uses the $structuralCheck function from react-compiler-runtime to detect structural differences between old and new values",
+      "max_score": "25"
+    },
+    {
+      "name": "Correct $structuralCheck parameters",
+      "description": "Passes all six required parameters to $structuralCheck in correct order: oldValue, newValue, variableName, fnName, kind, and loc",
+      "max_score": "10"
+    },
+    {
+      "name": "Report generation",
+      "description": "Generates performance report by iterating through renderCounterRegistry and aggregating render counts from the Set of counter objects for each component",
+      "max_score": "5"
+    }
+  ]
+}
