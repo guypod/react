@@ -1,7 +1,8 @@
 {
-  "name": "tessl/npm-babel-plugin-react-compiler",
+  "name": "guydemo/babel-plugin-react-compiler",
   "version": "0.0.0",
   "docs": "docs/index.md",
-  "describes": "pkg:npm/babel-plugin-react-compiler@0.0.0-experimental-334f00b-20240725",
-  "summary": "Babel plugin that automatically optimizes React components and hooks by ensuring only minimal parts re-render when state changes."
+  "describes": "pkg:npm/babel-plugin-react-compiler@0.0.0",
+  "summary": "Babel plugin for React Compiler that optimizes React applications by ensuring only minimal parts re-render on state changes",
+  "private": true
 }

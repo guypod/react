@@ -1,83 +1,95 @@
-# React Compiler Configuration with Custom Validation
+# React Compiler Configuration Monitor
 
-## Overview
+A tool that monitors and reports compilation statistics when using a Babel plugin for React optimization.
 
-Configure the React Compiler plugin for a React application with specific requirements for custom hooks, validation rules, and feature-flagged rollout.
+## Capabilities
 
-## Requirements
+### Tracks compilation success events
 
-### 1. Configure Custom Hook Behavior
+- When a function is successfully compiled, the monitor logs the function name and file path. [@test](../test/monitor.test.ts)
+- When multiple functions are successfully compiled, the monitor logs each function's name separately. [@test](../test/monitor-multiple.test.ts)
 
-Your application uses a custom hook called `useDataFetcher` that fetches and caches data. The compiler needs to understand this hook's behavior:
+### Tracks compilation errors
 
-- The hook reads from its arguments but does not mutate them
-- The hook returns non-constant (mutable) values
-- Arguments passed to the hook should not be aliased
-- The return value contains JSON-serializable data
+- When a compilation error occurs, the monitor logs the error kind and file path. [@test](../test/monitor-error.test.ts)
 
-Configure the compiler to recognize this custom hook with the appropriate effect and value semantics.
+### Configures selective compilation
 
-### 2. Enable Strict Validation Rules
+- The monitor can be configured to only compile files matching a specific pattern. [@test](../test/monitor-selective.test.ts)
 
-Enable the following validation checks to enforce React best practices:
+### Generates compilation report
 
-- Validate that refs are not accessed during render (ref.current should not be read in component bodies)
-- Validate that effect dependencies are properly memoized
-- Ensure that capitalized functions are not called unsafely (except for allowed components: `App`, `Header`, `Footer`)
-
-### 3. Implement Feature Gating
-
-The team wants to gradually roll out the compiled code using a feature flag. Configure the plugin to:
-
-- Generate both compiled and uncompiled versions of functions
-- Import a feature flag function from the module `@company/feature-flags`
-- Use the named export `isCompilerEnabled` as the gating function
-- The compiled version should only run when the feature flag returns true
-
-### 4. Set Compilation Mode and Error Handling
-
-- Use "infer" mode to automatically detect components and hooks
-- Configure the compiler to continue compilation even if errors occur (do not throw exceptions on errors)
+- After processing files, the monitor generates a summary report containing total successful compilations and total errors. [@test](../test/monitor-report.test.ts)
 
 ## Implementation
 
-Create a complete configuration file that satisfies all the requirements above. Your solution should be a JavaScript module that exports the plugin configuration.
+[@generates](./src/monitor.ts)
 
-## File Structure
+## API
 
-```
-src/
-  babel.config.js     # Your Babel configuration file
+```typescript { #api }
+/**
+ * Configuration options for the React Compiler Monitor.
+ */
+export interface MonitorConfig {
+  /**
+   * Filter function to determine which files should be compiled.
+   * Returns true if the file should be compiled, false otherwise.
+   */
+  fileFilter?: (filename: string) => boolean;
+
+  /**
+   * Compilation mode to use.
+   * - 'infer': Compile functions that look like components/hooks
+   * - 'all': Compile all top-level functions
+   */
+  compilationMode?: 'infer' | 'all';
+}
+
+/**
+ * Statistics about compilation activity.
+ */
+export interface CompilationStats {
+  /** Total number of successful compilations */
+  successCount: number;
+
+  /** Total number of compilation errors */
+  errorCount: number;
+
+  /** List of successfully compiled function names */
+  compiledFunctions: string[];
+
+  /** List of file paths with errors */
+  errorFiles: string[];
+}
+
+/**
+ * Creates a React Compiler Monitor with the given configuration.
+ *
+ * @param config - Configuration options for the monitor
+ * @returns An object with methods to get the Babel plugin and retrieve statistics
+ */
+export function createCompilerMonitor(config?: MonitorConfig): {
+  /**
+   * Returns the configured Babel plugin array suitable for use in Babel config.
+   * Format: [pluginFunction, options]
+   */
+  getPlugin: () => [any, any];
+
+  /**
+   * Returns the current compilation statistics.
+   */
+  getStats: () => CompilationStats;
+
+  /**
+   * Resets the compilation statistics to zero.
+   */
+  resetStats: () => void;
+};
 ```
 
 ## Dependencies { .dependencies }
 
 ### babel-plugin-react-compiler { .dependency }
 
-Babel plugin that optimizes React applications by automatically handling memoization and minimizing re-renders.
-
-## Test Cases
-
-### Test Case 1: Configuration Exports { .test }
-
-**Input**: Load the babel.config.js file
-
-**Expected Output**: The file should export a valid Babel configuration object with the React Compiler plugin configured
-
-### Test Case 2: Custom Hook Configuration { .test }
-
-**Input**: Check the custom hooks configuration in the plugin options
-
-**Expected Output**: The configuration should include a custom hook named `useDataFetcher` with appropriate effect and value settings
-
-### Test Case 3: Validation Rules { .test }
-
-**Input**: Check the environment configuration for validation flags
-
-**Expected Output**: The configuration should enable validation for ref access during render, memoized effect dependencies, and capitalized calls with an allowlist
-
-### Test Case 4: Feature Gating Setup { .test }
-
-**Input**: Check the gating configuration in the plugin options
-
-**Expected Output**: The configuration should include a gating object that imports `isCompilerEnabled` from `@company/feature-flags`
+Provides React optimization through automatic memoization.
