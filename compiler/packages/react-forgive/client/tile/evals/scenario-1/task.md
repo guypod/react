@@ -1,78 +1,108 @@
-# Code Analysis Extension
+# LSP Decoration Utilities
 
-A Visual Studio Code extension that provides real-time code quality suggestions through a language server. The extension communicates with a language server to analyze code and display inline suggestions.
+A TypeScript utility module for VS Code extensions that work with Language Server Protocol (LSP) data. The module provides functions to convert LSP position data, manage visual decorations, manipulate colors with hue preservation, and handle async decoration requests with race condition prevention.
 
 ## Capabilities
 
-### Extension activation and client setup
+### Position Conversion
 
-The extension activates for JavaScript and TypeScript files and creates a client that communicates with a language server using inter-process communication.
+- It converts LSP position literals to VS Code Position objects [@test](../test/position-conversion.test.ts)
+- It creates VS Code Range objects from pairs of LSP positions [@test](../test/range-creation.test.ts)
 
-- The extension activates and creates a language client configured for JavaScript and TypeScript files [@test](../test/activation.test.ts)
-- The language client is configured to use inter-process communication with the server [@test](../test/ipc-transport.test.ts)
+### Decoration Management
 
-### Custom analysis requests
+- It applies text decorations with hover messages to the active editor [@test](../test/apply-decorations.test.ts)
+- It clears all decorations when given an empty array [@test](../test/clear-decorations.test.ts)
 
-The extension defines and sends custom requests to retrieve code suggestions from the server.
+### Color Manipulation
 
-- A custom request type 'code/getSuggestions' is defined with position and URI parameters [@test](../test/custom-request-type.test.ts)
-- The client can send the custom request and receive a response with suggestion text and ranges [@test](../test/send-custom-request.test.ts)
+- It adjusts colors while preserving hue using the redistribution algorithm [@test](../test/color-adjust.test.ts)
+- It formats colors as CSS RGBA strings with alpha transparency [@test](../test/color-format.test.ts)
 
-### Hover provider integration
+### Async Request Handling
 
-When users hover over code, the extension retrieves and displays analysis from the server.
-
-- A hover provider is registered for JavaScript and TypeScript files [@test](../test/hover-provider.test.ts)
-- When hover is triggered, the extension sends a request to the server and displays the returned suggestion [@test](../test/hover-display.test.ts)
-
-### Client lifecycle management
-
-The extension manages the language client lifecycle appropriately.
-
-- The client starts automatically when the extension activates [@test](../test/client-start.test.ts)
-- The client stops gracefully when the extension is deactivated [@test](../test/client-stop.test.ts)
+- It processes decoration requests with race condition prevention [@test](../test/request-handling.test.ts)
+- It discards stale responses when newer requests are made [@test](../test/stale-response.test.ts)
 
 ## Implementation
 
-[@generates](./src/extension.ts)
+[@generates](./src/index.ts)
 
 ## API
 
 ```typescript { #api }
-/**
- * Activates the extension and initializes the language client
- */
-export function activate(context: vscode.ExtensionContext): void;
+import * as vscode from 'vscode';
+import { Position } from 'vscode-languageclient/node';
 
 /**
- * Deactivates the extension and stops the language client
+ * Converts an LSP Position literal to a VS Code Position object
  */
-export function deactivate(): Thenable<void> | undefined;
+export function positionLiteralToVSCodePosition(position: Position): vscode.Position;
 
 /**
- * Parameters for code analysis request
+ * Creates a VS Code Range from start and end LSP positions
  */
-interface CodeAnalysisParams {
-  uri: string;
-  position: { line: number; character: number };
+export function positionsToRange(start: Position, end: Position): vscode.Range;
+
+/**
+ * Applies decorations to the active text editor with the given ranges and hover messages
+ */
+export function drawDecorations(
+  decorationType: vscode.TextEditorDecorationType,
+  decorations: Array<{ start: Position; end: Position; message: string }>
+): void;
+
+/**
+ * Clears all decorations of the specified type from the active editor
+ */
+export function clearDecorations(decorationType: vscode.TextEditorDecorationType): void;
+
+/**
+ * Color class with adjustment capabilities
+ */
+export class Color {
+  constructor(r: number, g: number, b: number);
+
+  /**
+   * Returns CSS RGBA string with specified alpha value
+   */
+  toAlphaString(a: number): string;
+
+  /**
+   * Returns CSS RGB string
+   */
+  toString(): string;
+
+  /**
+   * Adjusts color brightness by multiplier while preserving hue
+   * Values > 1.0 lighten, values < 1.0 darken
+   */
+  adjusted(mult: number): Color;
 }
 
 /**
- * Response from code analysis request
+ * Options for handling decoration requests
  */
-interface CodeAnalysisResponse {
-  suggestion: string;
-  range: {
-    start: { line: number; character: number };
-    end: { line: number; character: number };
-  };
+export interface RequestOptions {
+  /**
+   * Whether to update the currently tracked decoration location
+   */
+  shouldUpdateLocation: boolean;
 }
+
+/**
+ * Manages sequential decoration requests with race condition prevention.
+ * Increments and returns a request ID, executes the request function,
+ * and only applies decorations if the response matches the latest request ID.
+ */
+export function requestDecorations(
+  decorationType: vscode.TextEditorDecorationType,
+  requestFn: () => Promise<Array<{ start: Position; end: Position; message: string }> | null>
+): void;
 ```
 
 ## Dependencies { .dependencies }
 
-### vscode-languageclient { .dependency }
+### react-forgive-client { .dependency }
 
-Provides the language server protocol client for communicating with language servers.
-
-[@satisfied-by](vscode-languageclient)
+Provides LSP client utilities for VS Code extensions, including position conversion, decoration management, and color manipulation with hue-preserving algorithms.

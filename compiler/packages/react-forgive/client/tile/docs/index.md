@@ -187,3 +187,206 @@ The extension communicates with a React Forgive language server using a custom L
 - `javascriptreact` (JSX files)
 - `typescriptreact` (TSX files)
 - File scheme: `file://`
+
+## Types
+
+### VS Code Types
+
+```typescript { .api }
+/**
+ * Represents a line and character position in a text document
+ */
+namespace vscode {
+  class Position {
+    /** Zero-based line number */
+    readonly line: number;
+    /** Zero-based character offset within the line */
+    readonly character: number;
+
+    constructor(line: number, character: number);
+
+    /** Compare this position to another */
+    compareTo(other: Position): number;
+    /** Check if this position is equal to another */
+    isEqual(other: Position): boolean;
+    /** Check if this position is before another */
+    isBefore(other: Position): boolean;
+    /** Check if this position is before or equal to another */
+    isBeforeOrEqual(other: Position): boolean;
+    /** Check if this position is after another */
+    isAfter(other: Position): boolean;
+    /** Check if this position is after or equal to another */
+    isAfterOrEqual(other: Position): boolean;
+    /** Create a new position from this position */
+    translate(lineDelta?: number, characterDelta?: number): Position;
+    /** Create a new position with a different line or character */
+    with(line?: number, character?: number): Position;
+  }
+
+  /**
+   * Represents a text range in a document, defined by start and end positions
+   */
+  class Range {
+    /** The start position (inclusive) */
+    readonly start: Position;
+    /** The end position (exclusive) */
+    readonly end: Position;
+
+    constructor(start: Position, end: Position);
+    constructor(startLine: number, startCharacter: number, endLine: number, endCharacter: number);
+
+    /** Check if this range is empty (start equals end) */
+    readonly isEmpty: boolean;
+    /** Check if this range is a single line */
+    readonly isSingleLine: boolean;
+    /** Check if a position or range is contained in this range */
+    contains(positionOrRange: Position | Range): boolean;
+    /** Check if this range is equal to another */
+    isEqual(other: Range): boolean;
+    /** Create the intersection of this range with another */
+    intersection(other: Range): Range | undefined;
+    /** Create the union of this range with another */
+    union(other: Range): Range;
+    /** Create a new range from this range */
+    with(start?: Position, end?: Position): Range;
+  }
+
+  /**
+   * Represents the context passed to an extension's activate function
+   */
+  interface ExtensionContext {
+    /** An array of disposables that are disposed when the extension is deactivated */
+    subscriptions: { dispose(): any }[];
+    /** The absolute file path of the directory containing the extension */
+    extensionPath: string;
+    /** The URI of the directory containing the extension */
+    extensionUri: Uri;
+    /** Gets the workspace state (memento) for this extension */
+    workspaceState: Memento;
+    /** Gets the global state (memento) for this extension */
+    globalState: Memento & { setKeysForSync(keys: readonly string[]): void };
+    /** Gets the extension's secret storage */
+    secrets: SecretStorage;
+    /** The absolute file path for storing workspace-specific data */
+    storagePath: string | undefined;
+    /** The URI for storing workspace-specific data */
+    storageUri: Uri | undefined;
+    /** The absolute file path for storing global data */
+    globalStoragePath: string;
+    /** The URI for storing global data */
+    globalStorageUri: Uri;
+    /** The absolute file path for storing log files */
+    logPath: string;
+    /** The URI for storing log files */
+    logUri: Uri;
+    /** The mode in which the extension is running */
+    extensionMode: ExtensionMode;
+    /** The extension object */
+    extension: Extension<any>;
+    /** Get the absolute path of a resource contained in the extension */
+    asAbsolutePath(relativePath: string): string;
+  }
+
+  /**
+   * Represents the configuration for a text editor decoration
+   */
+  interface TextEditorDecorationType {
+    /** The unique key for this decoration type */
+    readonly key: string;
+    /** Dispose and free associated resources */
+    dispose(): void;
+  }
+
+  interface Uri {
+    scheme: string;
+    authority: string;
+    path: string;
+    query: string;
+    fragment: string;
+    fsPath: string;
+  }
+
+  interface Memento {
+    get<T>(key: string): T | undefined;
+    get<T>(key: string, defaultValue: T): T;
+    update(key: string, value: any): Thenable<void>;
+  }
+
+  interface SecretStorage {
+    get(key: string): Thenable<string | undefined>;
+    store(key: string, value: string): Thenable<void>;
+    delete(key: string): Thenable<void>;
+  }
+
+  enum ExtensionMode {
+    Production = 1,
+    Development = 2,
+    Test = 3
+  }
+
+  interface Extension<T> {
+    id: string;
+    extensionUri: Uri;
+    extensionPath: string;
+    isActive: boolean;
+    packageJSON: any;
+    exports: T;
+    activate(): Thenable<T>;
+  }
+}
+
+/**
+ * Represents a thenable (Promise-like) value
+ */
+interface Thenable<T> {
+  then<TResult>(
+    onfulfilled?: (value: T) => TResult | Thenable<TResult>,
+    onrejected?: (reason: any) => TResult | Thenable<TResult>
+  ): Thenable<TResult>;
+  then<TResult>(
+    onfulfilled?: (value: T) => TResult | Thenable<TResult>,
+    onrejected?: (reason: any) => void
+  ): Thenable<TResult>;
+}
+```
+
+### Language Server Protocol Types
+
+```typescript { .api }
+/**
+ * LSP Position represents a location in a text document
+ */
+interface Position {
+  /** Zero-based line number */
+  line: number;
+  /** Zero-based character offset within the line */
+  character: number;
+}
+
+/**
+ * Language Server Protocol client for communicating with language servers
+ */
+interface LanguageClient {
+  /** Send a request to the language server */
+  sendRequest<P, R, E>(
+    type: RequestType<P, R, E>,
+    params: P
+  ): Thenable<R>;
+
+  /** Register proposed LSP features */
+  registerProposedFeatures(): void;
+
+  /** Start the language client */
+  start(): Promise<void>;
+
+  /** Stop the language client */
+  stop(): Thenable<void>;
+}
+
+/**
+ * Defines a request type for LSP communication
+ */
+interface RequestType<P, R, E> {
+  readonly method: string;
+}
+```
