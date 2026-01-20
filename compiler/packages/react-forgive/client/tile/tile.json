@@ -1,0 +1,7 @@
+{
+  "name": "guydemo/react-forgive-client",
+  "version": "0.0.0",
+  "docs": "docs/index.md",
+  "summary": "Experimental VS Code extension providing LSP client for React development with automatic dependency analysis and visualization",
+  "private": true
+}

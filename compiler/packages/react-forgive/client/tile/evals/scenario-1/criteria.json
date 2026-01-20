@@ -1,0 +1,46 @@
+{
+  "context": "This criteria evaluates how effectively the engineer uses react-forgive-client package APIs to implement LSP position conversion, decoration management, color manipulation with hue preservation, and async request handling with race condition prevention.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Position conversion",
+      "description": "Uses positionLiteralToVSCodePosition() from react-forgive-client to convert LSP Position objects (with .line and .character properties) to VS Code Position instances created via new vscode.Position()",
+      "max_score": 10
+    },
+    {
+      "name": "Range creation",
+      "description": "Uses positionsToRange() from react-forgive-client to create VS Code Range objects from pairs of LSP positions, rather than manually creating ranges",
+      "max_score": 10
+    },
+    {
+      "name": "Decoration application",
+      "description": "Uses drawInferredEffectDepDecorations() or similar pattern from react-forgive-client to apply decorations by: (1) creating decoration options with range and hoverMessage properties, (2) calling setDecorations() on the active text editor",
+      "max_score": 20
+    },
+    {
+      "name": "Decoration clearing",
+      "description": "Uses clearDecorations() from react-forgive-client to clear decorations by passing an empty array to setDecorations() on the active text editor",
+      "max_score": 10
+    },
+    {
+      "name": "Color class usage",
+      "description": "Uses the Color class from react-forgive-client with constructor(r, g, b) to create Color instances",
+      "max_score": 5
+    },
+    {
+      "name": "Color adjustment",
+      "description": "Uses the adjusted(mult) method from react-forgive-client's Color class which implements RGB redistribution algorithm to preserve hue when adjusting brightness (values > 1.0 lighten, < 1.0 darken)",
+      "max_score": 15
+    },
+    {
+      "name": "Color formatting",
+      "description": "Uses toAlphaString(a) and toString() methods from react-forgive-client's Color class to generate CSS RGBA and RGB strings respectively",
+      "max_score": 10
+    },
+    {
+      "name": "Race condition prevention",
+      "description": "Implements race condition prevention pattern from react-forgive-client using: (1) incrementing request ID counter, (2) checking if decorationRequestId === id before applying decorations, (3) discarding stale responses that don't match the latest request ID",
+      "max_score": 20
+    }
+  ]
+}
