@@ -1,0 +1,7 @@
+{
+  "name": "guydemo/react-forgive",
+  "version": "0.0.0",
+  "docs": "docs/index.md",
+  "summary": "A Visual Studio Code extension that provides Language Server Protocol functionality for analyzing React code using the React Compiler",
+  "private": true
+}

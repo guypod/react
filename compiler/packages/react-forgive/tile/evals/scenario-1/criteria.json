@@ -1,0 +1,36 @@
+{
+  "context": "This evaluation assesses how well the engineer uses the vscode and vscode-languageclient package APIs to implement a VS Code extension with custom LSP requests and text decorations, focusing on correct usage of RequestType, LanguageClient, TextEditorDecorationType, and position/range conversion patterns from these packages.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Custom RequestType Definition",
+      "description": "Uses RequestType from 'vscode-languageclient/node' to define HookDecorationsRequest.type with correct generic parameters (HookDecorationsParams, HookDecorationsResponse | null, void) and the request identifier 'react/hookDecorations'",
+      "max_score": 20
+    },
+    {
+      "name": "LanguageClient Request Sending",
+      "description": "Uses LanguageClient.sendRequest() method with the custom request type and HookDecorationsParams to send the LSP request and handle the Promise response",
+      "max_score": 15
+    },
+    {
+      "name": "TextEditorDecorationType Creation",
+      "description": "Uses vscode.window.createTextEditorDecorationType() to create a decoration type with borderWidth, borderStyle, and borderColor properties, specifically using vscode.ThemeColor('diffEditor.move.border')",
+      "max_score": 20
+    },
+    {
+      "name": "Decoration Application",
+      "description": "Uses TextEditor.setDecorations() method on vscode.window.activeTextEditor to apply decorations with an array of decoration options containing range and hoverMessage properties",
+      "max_score": 15
+    },
+    {
+      "name": "Position Conversion",
+      "description": "Converts Position literals {line, character} to vscode.Position objects using the vscode.Position constructor with line and character parameters",
+      "max_score": 15
+    },
+    {
+      "name": "Range Conversion",
+      "description": "Converts Position tuple [Position, Position] to vscode.Range objects using the vscode.Range constructor with start and end vscode.Position parameters",
+      "max_score": 15
+    }
+  ]
+}
