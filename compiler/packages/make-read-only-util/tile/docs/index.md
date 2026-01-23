@@ -1,13 +1,15 @@
-# make-read-only-util
+# Make Read Only Util
 
-A runtime tracking system for detecting mutations to objects marked as "read-only", designed for React Compiler development and debugging. The library provides a proxy-based mechanism that monitors property access and modifications on designated objects, logging violations when mutations occur.
+Make Read Only Util is a TypeScript utility package for tracking and logging violations when code attempts to mutate objects that have been marked as read-only. It implements a proxy-based system that intercepts property modifications and logs different types of violations through a customizable logger function.
 
 ## Package Information
 
 - **Package Name**: make-read-only-util
 - **Package Type**: npm
 - **Language**: TypeScript
-- **Installation**: `npm install make-read-only-util`
+- **Installation**: Part of React monorepo at `compiler/packages/make-read-only-util`
+- **Repository**: https://github.com/facebook/react
+- **License**: MIT
 
 ## Core Imports
 
@@ -15,24 +17,9 @@ A runtime tracking system for detecting mutations to objects marked as "read-onl
 import buildMakeReadOnly from "make-read-only-util";
 ```
 
-For CommonJS:
+CommonJS:
 
 ```javascript
-const buildMakeReadOnly = require("make-read-only-util");
-```
-
-### Type Imports
-
-The package exports TypeScript type definitions:
-
-```typescript
-import buildMakeReadOnly, { type ROViolationType, type ROViolationLogger } from "make-read-only-util";
-```
-
-For TypeScript projects using CommonJS:
-
-```typescript
-import type { ROViolationType, ROViolationLogger } from "make-read-only-util";
 const buildMakeReadOnly = require("make-read-only-util");
 ```
 
@@ -43,33 +30,39 @@ import buildMakeReadOnly from "make-read-only-util";
 
 // Create a logger to handle violations
 const logger = (violation, source, key, value) => {
-  console.error(`[${violation}] ${source}.${key} = ${value}`);
+  console.error(`[${source}] ${violation}: property '${key}' modified`, value);
 };
 
-// Build a makeReadOnly function with logging configuration
+// Build the makeReadOnly function with configuration
 const makeReadOnly = buildMakeReadOnly(logger, []);
 
 // Mark an object as read-only
-const obj = { a: 1, b: { c: 2 } };
-makeReadOnly(obj, "myObject");
+const obj = { count: 0, name: "test" };
+makeReadOnly(obj, "myComponent");
 
-// Mutations are now tracked and logged
-obj.a = 5; // Logs: [FORGET_MUTATE_IMMUT] myObject.a = 5
-obj.b.c = 10; // Logs: [FORGET_MUTATE_IMMUT] myObject.c = 10
+// Mutations are tracked and logged
+obj.count = 5; // Logs: FORGET_MUTATE_IMMUT
+
+// Nested mutations are also tracked
+const nested = { data: { value: 42 } };
+makeReadOnly(nested, "nestedExample");
+nested.data.value = 100; // Logs: FORGET_MUTATE_IMMUT
 ```
 
 ## Capabilities
 
-### Build makeReadOnly Function
+### Factory Function
 
-Factory function that creates a makeReadOnly function with configured logging and class filtering.
+Creates a configured `makeReadOnly` function that tracks mutations to objects.
 
 ```typescript { .api }
 /**
- * Creates a makeReadOnly function with violation logging and class filtering
- * @param logger - Callback function invoked when violations are detected
- * @param skippedClasses - Array of class names to exclude from tracking
- * @returns A makeReadOnly function for tracking object mutations
+ * Factory function that creates a makeReadOnly function configured with
+ * a logger and list of classes to skip
+ *
+ * @param logger - Callback function that receives violation reports
+ * @param skippedClasses - Array of class names to skip read-only enforcement
+ * @returns A makeReadOnly function that accepts a value and source string
  */
 function buildMakeReadOnly(
   logger: ROViolationLogger,
@@ -77,266 +70,241 @@ function buildMakeReadOnly(
 ): <T>(val: T, source: string) => T;
 ```
 
-**Usage Example:**
-
-```typescript
-import buildMakeReadOnly from "make-read-only-util";
-
-const violations: Array<{type: string; source: string; key: string}> = [];
-
-const logger = (violation, source, key, value) => {
-  violations.push({ type: violation, source, key });
-};
-
-// Skip tracking for certain class instances
-const makeReadOnly = buildMakeReadOnly(logger, ["WeakMap", "WeakSet"]);
-
-const obj = { count: 0 };
-makeReadOnly(obj, "counter");
-obj.count = 1; // Violation logged
-```
-
-### makeReadOnly Function
-
-The function returned by `buildMakeReadOnly` that marks objects as read-only and tracks mutations.
+The returned `makeReadOnly` function has the following signature:
 
 ```typescript { .api }
 /**
- * Marks a value as read-only and tracks mutations via proxy mechanism
- * @param val - The value to mark as read-only (any type)
- * @param source - Identifier string used in logging to track the origin
- * @returns The same value with referential equality maintained
+ * Wraps an object to track mutations
+ *
+ * @param val - The value to make read-only (primitives pass through unchanged)
+ * @param source - Source identifier used in logging violations
+ * @returns The same value (by reference for objects, maintains referential equality)
  */
 function makeReadOnly<T>(val: T, source: string): T;
 ```
 
 **Behavior:**
+- Primitives and null/undefined are returned unchanged
+- Objects in the `skippedClasses` list are returned unchanged
+- Other objects have their properties replaced with getter/setter proxies
+- Maintains referential equality and handles cyclic references correctly
+- Properties named 'current' are skipped (for React refs compatibility)
+- Accessor properties (getters/setters) are not tracked
 
-- **Primitives and null**: Returned unchanged without tracking
-- **Filtered classes**: Objects matching `skippedClasses` are returned unchanged
-- **Regular objects**: Properties replaced with getter/setter proxies
-- **Nested objects**: Recursively tracked when accessed (lazy tracking)
-- **Multiple calls**: Detects property additions and deletions between calls
-- **Referential equality**: The same object reference is returned
-
-**Usage Example:**
-
-```typescript
-// Track immediate mutations
-const obj = { x: 1 };
-makeReadOnly(obj, "test");
-obj.x = 2; // Logs: FORGET_MUTATE_IMMUT
-
-// Track nested mutations
-const nested = { outer: { inner: 5 } };
-makeReadOnly(nested, "test");
-nested.outer.inner = 10; // Logs: FORGET_MUTATE_IMMUT
-
-// Track property additions/deletions
-const dynamic: any = {};
-makeReadOnly(dynamic, "test");
-dynamic.newProp = "value";
-makeReadOnly(dynamic, "test"); // Logs: FORGET_ADD_PROP_IMMUT
-
-const withProp: any = { prop: 1 };
-makeReadOnly(withProp, "test");
-delete withProp.prop;
-makeReadOnly(withProp, "test"); // Logs: FORGET_DELETE_PROP_IMMUT
-```
-
-**Limitations:**
-
-- Does not track properties with custom getter/setter accessors
-- Does not track properties named `'current'` (React ref optimization)
-- Properties deleted/added without subsequent `makeReadOnly` call are not detected
-- Aliased mutations occurring before the first `makeReadOnly` call are not tracked
-
-### Violation Logger Callback
-
-Callback function invoked when a read-only violation is detected.
-
-```typescript { .api }
-/**
- * Callback function signature for logging read-only violations
- * @param violation - Type of violation that occurred
- * @param source - Source identifier passed to makeReadOnly
- * @param key - Property key that was modified
- * @param value - New value assigned (undefined for deletions)
- */
-type ROViolationLogger = (
-  violation: ROViolationType,
-  source: string,
-  key: string,
-  value?: any
-) => void;
-```
-
-**Usage Example:**
+**Examples:**
 
 ```typescript
 import buildMakeReadOnly from "make-read-only-util";
 
-// Custom logger with formatted output
-const logger: ROViolationLogger = (violation, source, key, value) => {
-  const timestamp = new Date().toISOString();
-  console.log(`[${timestamp}] ${violation}`);
-  console.log(`  Source: ${source}`);
-  console.log(`  Key: ${key}`);
-  if (value !== undefined) {
-    console.log(`  Value: ${JSON.stringify(value)}`);
-  }
+const violations: any[] = [];
+const logger = (violation, source, key, value) => {
+  violations.push({ violation, source, key, value });
 };
 
 const makeReadOnly = buildMakeReadOnly(logger, []);
+
+// Basic usage
+const obj = { x: 1, y: 2 };
+makeReadOnly(obj, "example1");
+obj.x = 10; // Violation logged: FORGET_MUTATE_IMMUT
+
+// Nested object tracking
+const parent = { child: { value: 42 } };
+makeReadOnly(parent, "example2");
+parent.child.value = 100; // Violation logged: FORGET_MUTATE_IMMUT
+
+// Cyclic references
+const circular: any = { self: null };
+circular.self = circular;
+makeReadOnly(circular, "example3"); // Works correctly
+
+// Skipping specific classes
+class SkippedClass {
+  public value = 0;
+}
+const makeReadOnlyWithSkip = buildMakeReadOnly(logger, ["SkippedClass"]);
+const skipped = new SkippedClass();
+makeReadOnlyWithSkip(skipped, "example4");
+skipped.value = 5; // No violation logged
+
+// Detecting property additions/deletions
+const mutable: any = { a: 1 };
+makeReadOnly(mutable, "example5");
+mutable.b = 2; // Not detected yet
+makeReadOnly(mutable, "example5"); // Now detects: FORGET_ADD_PROP_IMMUT
+delete mutable.a; // Not detected yet
+makeReadOnly(mutable, "example5"); // Now detects: FORGET_DELETE_PROP_IMMUT
 ```
 
 ## Types
 
+**Note**: The types below are not exported from the package but are provided here for reference. TypeScript users can infer these types from the `buildMakeReadOnly` function signature, or manually define them in their own code.
+
 ### ROViolationType
 
-Enumeration of possible violation types detected by the tracking system.
+String literal union type representing different types of read-only violations.
 
 ```typescript { .api }
 type ROViolationType =
-  | "FORGET_MUTATE_IMMUT"    // Direct mutation of a property value
-  | "FORGET_DELETE_PROP_IMMUT"  // Property deletion
-  | "FORGET_CHANGE_PROP_IMMUT"  // Property changed (deleted and re-added)
-  | "FORGET_ADD_PROP_IMMUT";    // New property added
+  | 'FORGET_MUTATE_IMMUT'      // Mutation of an existing property
+  | 'FORGET_DELETE_PROP_IMMUT'  // Deletion of a property
+  | 'FORGET_CHANGE_PROP_IMMUT'  // Property was deleted and re-added
+  | 'FORGET_ADD_PROP_IMMUT';    // New property was added
 ```
-
-**Violation Types:**
-
-- **`FORGET_MUTATE_IMMUT`**: A property value was directly mutated
-- **`FORGET_DELETE_PROP_IMMUT`**: A property was deleted from the object
-- **`FORGET_CHANGE_PROP_IMMUT`**: A property was deleted and then re-added (detected between `makeReadOnly` calls)
-- **`FORGET_ADD_PROP_IMMUT`**: A new property was added (detected between `makeReadOnly` calls)
 
 ### ROViolationLogger
 
-Type definition for the violation logger callback function.
+Function signature for the violation logger callback.
 
 ```typescript { .api }
 type ROViolationLogger = (
   violation: ROViolationType,
   source: string,
   key: string,
-  value?: any
+  value?: any,
 ) => void;
 ```
 
-## Advanced Usage
+**Parameters:**
+- `violation: ROViolationType` - The type of violation that occurred
+- `source: string` - The source identifier that was passed to makeReadOnly
+- `key: string` - The property key that was accessed or mutated
+- `value?: any` - Optional value involved in the violation (present for mutations, absent for deletions)
 
-### Class Filtering
-
-Exclude specific class instances from tracking to avoid overhead or conflicts:
-
-```typescript
-import buildMakeReadOnly from "make-read-only-util";
-
-class InternalBuffer {
-  data: Uint8Array;
-  constructor() {
-    this.data = new Uint8Array(1024);
-  }
-}
-
-// Skip tracking for InternalBuffer instances
-const makeReadOnly = buildMakeReadOnly(
-  (violation, source, key) => console.log(`${violation}: ${source}.${key}`),
-  ["InternalBuffer", "WeakMap"]
-);
-
-const obj = {
-  buffer: new InternalBuffer(),
-  config: { setting: true }
-};
-
-makeReadOnly(obj, "app");
-// obj.buffer mutations are not tracked
-// obj.config mutations ARE tracked
-```
-
-### Integration with Testing Frameworks
-
-Use in test suites to validate immutability constraints:
+**Example:**
 
 ```typescript
-import buildMakeReadOnly from "make-read-only-util";
-
-describe("Component Tests", () => {
-  let violations: Array<{type: string; source: string; key: string}>;
-  let makeReadOnly: <T>(val: T, source: string) => T;
-
-  beforeEach(() => {
-    violations = [];
-    const logger = (violation, source, key) => {
-      violations.push({ type: violation, source, key });
-    };
-    makeReadOnly = buildMakeReadOnly(logger, []);
-  });
-
-  it("should not mutate props", () => {
-    const props = { value: 42 };
-    makeReadOnly(props, "props");
-
-    // Component code that should not mutate props
-    renderComponent(props);
-
-    expect(violations).toHaveLength(0);
-  });
-});
-```
-
-### Multi-Call Tracking Pattern
-
-Track property additions and deletions by calling `makeReadOnly` multiple times:
-
-```typescript
-import buildMakeReadOnly from "make-read-only-util";
-
-const logger = (violation, source, key) => {
-  console.log(`${violation} detected on ${source}.${key}`);
+const logger: ROViolationLogger = (violation, source, key, value) => {
+  const timestamp = new Date().toISOString();
+  const valueStr = value !== undefined ? `: ${JSON.stringify(value)}` : '';
+  console.warn(`[${timestamp}] ${source}.${key} - ${violation}${valueStr}`);
 };
 
 const makeReadOnly = buildMakeReadOnly(logger, []);
+const obj = { count: 0 };
+makeReadOnly(obj, "Counter");
+obj.count = 1; // Logs: [2026-01-23T...] Counter.count - FORGET_MUTATE_IMMUT: 1
+```
 
-const state: any = { initialized: true };
+## Violation Detection Behavior
 
-// First call establishes baseline
-makeReadOnly(state, "appState");
+### Tracked Violations
 
-// Modify state
-state.userCount = 100; // Not logged yet
+The following mutations are detected and logged:
 
-// Second call detects changes
-makeReadOnly(state, "appState"); // Logs: FORGET_ADD_PROP_IMMUT
+1. **Direct property mutations** - Modifying a property value directly
+   ```typescript
+   obj.prop = newValue; // FORGET_MUTATE_IMMUT
+   ```
 
-// More modifications
-delete state.initialized; // Not logged yet
+2. **Transitive mutations** - Modifying nested object properties
+   ```typescript
+   obj.nested.prop = value; // FORGET_MUTATE_IMMUT
+   ```
 
-// Third call detects deletion
-makeReadOnly(state, "appState"); // Logs: FORGET_DELETE_PROP_IMMUT
+3. **Property additions** - Adding new properties (detected on subsequent makeReadOnly calls)
+   ```typescript
+   makeReadOnly(obj, "source");
+   obj.newProp = value;
+   makeReadOnly(obj, "source"); // FORGET_ADD_PROP_IMMUT
+   ```
+
+4. **Property deletions** - Deleting properties (detected on subsequent makeReadOnly calls)
+   ```typescript
+   makeReadOnly(obj, "source");
+   delete obj.prop;
+   makeReadOnly(obj, "source"); // FORGET_DELETE_PROP_IMMUT
+   ```
+
+5. **Property replacements** - Deleting and re-adding a property
+   ```typescript
+   makeReadOnly(obj, "source");
+   delete obj.prop;
+   obj.prop = newValue;
+   makeReadOnly(obj, "source"); // FORGET_CHANGE_PROP_IMMUT
+   ```
+
+### Not Tracked
+
+The following mutations are **not** detected:
+
+1. **Property additions/deletions without subsequent makeReadOnly calls** - One-time call cannot detect these changes
+
+2. **Mutations through pre-existing aliases** - References captured before makeReadOnly was called
+   ```typescript
+   const alias = obj.nested;
+   makeReadOnly(obj, "source");
+   alias.prop = value; // Not detected
+   ```
+
+3. **Accessor properties** - Properties with custom getters/setters are not tracked
+
+4. **Properties named 'current'** - Special case for React refs compatibility
+
+5. **Non-configurable or non-writable properties** - Properties that cannot be proxied
+
+## Use Cases
+
+### Development-Time Immutability Enforcement
+
+Track violations during development to catch unintended mutations:
+
+```typescript
+const makeReadOnly = buildMakeReadOnly(
+  (violation, source, key, value) => {
+    if (process.env.NODE_ENV === 'development') {
+      console.error(`Immutability violation in ${source}: ${key}`);
+      throw new Error(`Attempted to modify read-only property: ${key}`);
+    }
+  },
+  []
+);
 ```
 
 ### React Compiler Integration
 
-The package is designed for React Compiler development to ensure generated code respects immutability:
+Track mutations in React components to enforce immutability constraints:
 
 ```typescript
-import buildMakeReadOnly from "make-read-only-util";
+const makeReadOnly = buildMakeReadOnly(
+  (violation, source, key, value) => {
+    console.warn(`Component ${source} mutated ${key} - may cause rendering issues`);
+  },
+  ['RefObject'] // Skip React ref objects
+);
 
-// In React Compiler test suite
-const logger = (violation, source, key, value) => {
-  throw new Error(
-    `Immutability violation in compiled code: ${violation} at ${source}.${key}`
-  );
-};
-
-const makeReadOnly = buildMakeReadOnly(logger, []);
-
-// Wrap compiler-generated function inputs
-function testCompiledComponent(props: any) {
-  makeReadOnly(props, "componentProps");
-  return compiledComponentCode(props);
+function MyComponent(props) {
+  makeReadOnly(props, 'MyComponent.props');
+  // Any prop mutations will be logged
 }
 ```
+
+### Debugging State Mutations
+
+Identify where state is being unexpectedly modified:
+
+```typescript
+const mutations: Array<{ source: string; key: string; stack: string }> = [];
+
+const makeReadOnly = buildMakeReadOnly(
+  (violation, source, key, value) => {
+    mutations.push({
+      source,
+      key,
+      stack: new Error().stack || '',
+    });
+  },
+  []
+);
+
+makeReadOnly(appState, 'AppState');
+// Later, inspect mutations array to see what changed
+```
+
+## Performance Considerations
+
+- **Memory efficient**: Uses WeakMap for caching, allowing garbage collection
+- **Lazy proxying**: Properties are proxied on access, not eagerly
+- **Overhead**: Adds getter/setter overhead to property access
+- **Development only**: Intended for development and debugging, not production
+- **Referential equality**: Maintains same object references, no cloning overhead

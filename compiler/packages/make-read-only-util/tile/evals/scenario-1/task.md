@@ -1,80 +1,65 @@
-# Cache Mutation Detector
+# Immutability Violation Tracker
 
-Build a development tool that tracks mutations to cached objects in a memoization system. The tool should detect when cached values are modified, helping developers identify bugs where immutable cached data is being mutated.
+A development utility that monitors objects for unexpected mutations and logs detailed information when changes occur to objects that should remain immutable.
 
-## Requirements
+## Capabilities
 
-### Core Functionality
+### Tracks property mutations
 
-Your implementation must:
+- When a property of a tracked object is reassigned, the logger is called with violation type 'PROPERTY_MUTATED', the source identifier, property name, and new value [@test](../test/tracker.test.ts)
+- When a nested object's property is mutated, the logger is called with the nested property name [@test](../test/tracker.test.ts)
 
-1. Create a factory function that accepts a custom violation handler and a list of class names to exclude from tracking
-2. The factory should return a function that wraps objects to track mutations
-3. Track four types of violations:
-   - Direct property mutations on tracked objects
-   - Properties deleted from tracked objects
-   - Properties replaced (deleted and re-added) on tracked objects
-   - New properties added to tracked objects
-4. Support deep tracking of nested objects - accessing nested properties should automatically track those nested values
+### Detects property additions and deletions
 
-### Violation Handler
+- When a property is added to a tracked object between successive tracking calls, the logger is called with violation type 'PROPERTY_ADDED' [@test](../test/tracker.test.ts)
+- When a property is deleted from a tracked object between successive tracking calls, the logger is called with violation type 'PROPERTY_DELETED' [@test](../test/tracker.test.ts)
 
-The violation handler should receive:
-- A violation type identifier
-- A source identifier (to track where the object came from)
-- The property name that was affected
-- The new value (when applicable for mutations)
+### Supports class-based exclusions
 
-### Tracking Behavior
+- Objects whose constructor name is in the exclusion list are not tracked [@test](../test/tracker.test.ts)
+- The tracker returns the original object unchanged for excluded classes [@test](../test/tracker.test.ts)
 
-- Objects should maintain referential equality after wrapping (the function returns the same object instance)
-- Primitive values (numbers, strings, booleans, null, undefined) should pass through unchanged
-- Objects whose class name appears in the exclusion list should not be tracked
-- Properties with existing getters/setters should be skipped
-- Properties with a key named "current" should be skipped
-- Only configurable, writeable properties should be tracked
+## Implementation
 
-### Detection Patterns
+[@generates](./src/index.ts)
 
-- Direct property mutations should be detected immediately when they occur
-- Structural changes (deletions, additions, replacements) require calling the tracking function twice: once to establish a baseline, and again to detect the changes
-
-### Implementation
-
-[@generates](./src/tracker.ts)
-
-### API
+## API
 
 ```typescript { #api }
-export type ViolationType =
-  | 'MUTATE'
-  | 'DELETE'
-  | 'CHANGE'
-  | 'ADD';
+/**
+ * Type representing the different kinds of immutability violations
+ */
+type ViolationType =
+  | 'PROPERTY_MUTATED'
+  | 'PROPERTY_DELETED'
+  | 'PROPERTY_CHANGED'
+  | 'PROPERTY_ADDED';
 
-export type ViolationHandler = (
-  violation: ViolationType,
-  source: string,
-  key: string,
-  value?: any,
+/**
+ * Callback function that receives violation information
+ */
+type ViolationLogger = (
+  violationType: ViolationType,
+  sourceId: string,
+  propertyKey: string,
+  newValue?: any
 ) => void;
 
+/**
+ * Creates a tracking function configured with a logger and class exclusions
+ *
+ * @param logger - Callback invoked when violations are detected
+ * @param excludedClasses - Array of constructor names to skip tracking
+ * @returns A function that tracks objects for mutations
+ */
 export function createTracker(
-  handler: ViolationHandler,
-  excludedClasses: string[],
-): <T>(value: T, source: string) => T;
+  logger: ViolationLogger,
+  excludedClasses: string[]
+): <T>(obj: T, sourceId: string) => T;
 ```
-
-## Test Cases
-
-- Calling the tracking function with a number returns that same number [@test](./src/tracker.test.ts)
-- Setting a property on a tracked object calls the handler with violation type 'MUTATE' [@test](./src/tracker.test.ts)
-- Setting a nested property calls the handler with the correct violation type [@test](./src/tracker.test.ts)
-- Adding a new property and calling the tracking function again logs violation type 'ADD' [@test](./src/tracker.test.ts)
-- Tracking an object of an excluded class returns it unchanged without any handler calls [@test](./src/tracker.test.ts)
 
 ## Dependencies { .dependencies }
 
 ### make-read-only-util { .dependency }
 
-Provides runtime mutation tracking capabilities for read-only objects.
+Provides utility to track mutations to objects marked as read-only.

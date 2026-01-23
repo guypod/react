@@ -3,5 +3,6 @@
   "version": "0.0.1",
   "docs": "docs/index.md",
   "describes": "pkg:npm/make-read-only-util@0.0.1",
-  "summary": "Utility package to track mutations to objects marked as read-only"
+  "summary": "Utility package to track mutations to objects marked as read-only",
+  "private": true
 }

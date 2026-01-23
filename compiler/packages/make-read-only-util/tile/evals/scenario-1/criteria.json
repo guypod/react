@@ -1,36 +1,31 @@
 {
-  "context": "This evaluation assesses how effectively the engineer uses the make-read-only-util package to implement a mutation tracking system. The focus is exclusively on correct usage of the package's API, including the buildMakeReadOnly factory function, violation logging mechanism, and advanced features like class filtering and property descriptor handling.",
+  "context": "This criteria evaluates how effectively the engineer uses the make-read-only-util package to implement an immutability violation tracker. The assessment focuses on correct usage of the buildMakeReadOnly factory function, proper mapping of violation types, and appropriate configuration of the tracking system.",
   "type": "weighted_checklist",
   "checklist": [
     {
       "name": "Uses buildMakeReadOnly",
-      "description": "Imports and calls buildMakeReadOnly from make-read-only-util package as the core implementation mechanism",
-      "max_score": "20"
-    },
-    {
-      "name": "Correct logger parameter",
-      "description": "Passes a logger/handler function as the first parameter to buildMakeReadOnly that matches the ROViolationLogger type signature (violation, source, key, value?)",
-      "max_score": "15"
-    },
-    {
-      "name": "Class filtering parameter",
-      "description": "Passes the excludedClasses/skippedClasses array as the second parameter to buildMakeReadOnly to enable class-based filtering",
-      "max_score": "15"
-    },
-    {
-      "name": "Returns makeReadOnly function",
-      "description": "Correctly returns the function produced by buildMakeReadOnly, which takes a value and source string and returns the wrapped value",
-      "max_score": "15"
+      "description": "The implementation correctly imports and calls the buildMakeReadOnly function from make-read-only-util package as the primary mechanism for creating the tracker",
+      "max_score": 20
     },
     {
       "name": "Maps violation types",
-      "description": "Correctly maps the four package violation types (FORGET_MUTATE_IMMUT, FORGET_DELETE_PROP_IMMUT, FORGET_CHANGE_PROP_IMMUT, FORGET_ADD_PROP_IMMUT) to the spec's types (MUTATE, DELETE, CHANGE, ADD)",
-      "max_score": "20"
+      "description": "The implementation correctly maps the package's violation types (FORGET_MUTATE_IMMUT, FORGET_DELETE_PROP_IMMUT, FORGET_CHANGE_PROP_IMMUT, FORGET_ADD_PROP_IMMUT) to the spec's required types (PROPERTY_MUTATED, PROPERTY_DELETED, PROPERTY_CHANGED, PROPERTY_ADDED)",
+      "max_score": 25
     },
     {
-      "name": "Handler integration",
-      "description": "Integrates the custom ViolationHandler by wrapping it in the ROViolationLogger to properly forward violation events with correct parameters",
-      "max_score": "15"
+      "name": "Implements logger wrapper",
+      "description": "The implementation creates a logger function that properly translates the package's logger signature (violation, source, key, value) to call the user-provided ViolationLogger callback",
+      "max_score": 20
+    },
+    {
+      "name": "Passes skipped classes",
+      "description": "The implementation correctly passes the excludedClasses array as the second parameter (skippedClasses) to buildMakeReadOnly",
+      "max_score": 15
+    },
+    {
+      "name": "Returns tracker function",
+      "description": "The createTracker function correctly returns the makeReadOnly function created by buildMakeReadOnly, preserving the generic type signature and allowing objects to be tracked with a source identifier",
+      "max_score": 20
     }
   ]
 }
