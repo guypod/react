@@ -1,0 +1,31 @@
+{
+  "context": "This criteria evaluates how effectively the engineer uses the make-read-only-util package to implement an immutability violation tracker. The assessment focuses on correct usage of the buildMakeReadOnly factory function, proper mapping of violation types, and appropriate configuration of the tracking system.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses buildMakeReadOnly",
+      "description": "The implementation correctly imports and calls the buildMakeReadOnly function from make-read-only-util package as the primary mechanism for creating the tracker",
+      "max_score": 20
+    },
+    {
+      "name": "Maps violation types",
+      "description": "The implementation correctly maps the package's violation types (FORGET_MUTATE_IMMUT, FORGET_DELETE_PROP_IMMUT, FORGET_CHANGE_PROP_IMMUT, FORGET_ADD_PROP_IMMUT) to the spec's required types (PROPERTY_MUTATED, PROPERTY_DELETED, PROPERTY_CHANGED, PROPERTY_ADDED)",
+      "max_score": 25
+    },
+    {
+      "name": "Implements logger wrapper",
+      "description": "The implementation creates a logger function that properly translates the package's logger signature (violation, source, key, value) to call the user-provided ViolationLogger callback",
+      "max_score": 20
+    },
+    {
+      "name": "Passes skipped classes",
+      "description": "The implementation correctly passes the excludedClasses array as the second parameter (skippedClasses) to buildMakeReadOnly",
+      "max_score": 15
+    },
+    {
+      "name": "Returns tracker function",
+      "description": "The createTracker function correctly returns the makeReadOnly function created by buildMakeReadOnly, preserving the generic type signature and allowing objects to be tracked with a source identifier",
+      "max_score": 20
+    }
+  ]
+}
