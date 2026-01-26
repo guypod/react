@@ -1,0 +1,36 @@
+{
+  "context": "This evaluation assesses how effectively the engineer uses the make-read-only-util package to implement a mutation tracking system. The focus is entirely on proper usage of buildMakeReadOnly, the custom logger callback, the skippedClasses parameter, and understanding of the four violation types.",
+  "type": "weighted_checklist",
+  "checklist": [
+    {
+      "name": "Uses buildMakeReadOnly",
+      "description": "Correctly imports and calls buildMakeReadOnly as the factory function to create the makeReadOnly tracking function. This is the core API of the package.",
+      "max_score": 20
+    },
+    {
+      "name": "Custom logger implementation",
+      "description": "Implements a custom ROViolationLogger callback function that collects violations with all four parameters (violation type, source, key, value). The logger should store violations in an array or similar structure for later retrieval.",
+      "max_score": 25
+    },
+    {
+      "name": "Maps violation types",
+      "description": "Correctly maps the four ROViolationType values (FORGET_MUTATE_IMMUT, FORGET_DELETE_PROP_IMMUT, FORGET_CHANGE_PROP_IMMUT, FORGET_ADD_PROP_IMMUT) to the spec's violation types (mutation, deletion, replacement, addition) in the reporting methods.",
+      "max_score": 20
+    },
+    {
+      "name": "Passes skippedClasses parameter",
+      "description": "Correctly passes the excludedClasses array as the second parameter (skippedClasses) to buildMakeReadOnly to enable class filtering functionality.",
+      "max_score": 15
+    },
+    {
+      "name": "Wraps makeReadOnly appropriately",
+      "description": "Uses the makeReadOnly function returned by buildMakeReadOnly in the trackObject method, passing both the object and source string. Maintains the return value to preserve referential equality.",
+      "max_score": 10
+    },
+    {
+      "name": "Implements reporting methods",
+      "description": "Provides getViolations() and getViolationSummary() methods that correctly aggregate and transform the logged violation data into the specified output formats with proper type conversions and counting.",
+      "max_score": 10
+    }
+  ]
+}
