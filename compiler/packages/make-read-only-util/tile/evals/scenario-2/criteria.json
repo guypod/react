@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee understands that the package's makeReadOnly function operates in place and preserves the original object reference. The evaluatee must use the package correctly and expose the referential equality guarantee. Criteria focus on correct package usage and identity preservation.",
+  "type": "weighted_checklist",
+  "capability_tested": "Referential Equality Preservation",
+  "checklist": [
+    {
+      "name": "Use package correctly",
+      "description": "The solution uses buildMakeReadOnly and the returned makeReadOnly function to apply tracking, not a custom re-implementation.",
+      "max_score": 30
+    },
+    {
+      "name": "Return value is input",
+      "description": "The function returns the result of calling makeReadOnly directly, which is always the same reference as the input object (===).",
+      "max_score": 35
+    },
+    {
+      "name": "No wrapping or copying",
+      "description": "The solution does not create a new object, proxy wrapper, or copy of the input — the package's in-place mutation approach is relied upon.",
+      "max_score": 20
+    },
+    {
+      "name": "Works for nested objects",
+      "description": "Referential equality is preserved even when the input object has nested object properties.",
+      "max_score": 15
+    }
+  ]
+}

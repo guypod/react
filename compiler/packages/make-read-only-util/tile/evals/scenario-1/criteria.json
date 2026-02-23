@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee correctly uses the package's tracking function with primitive values. The key insight is that the package's makeReadOnly function short-circuits when given a non-object or null and returns the value unchanged. Criteria focus on whether the evaluatee uses the package correctly and leverages its primitive pass-through behavior.",
+  "type": "weighted_checklist",
+  "capability_tested": "Primitive Pass-Through",
+  "checklist": [
+    {
+      "name": "Use package factory",
+      "description": "The solution uses buildMakeReadOnly to create the tracking function rather than implementing the primitive-pass-through logic manually.",
+      "max_score": 30
+    },
+    {
+      "name": "Pass source string",
+      "description": "The tracking function is called with both the value and a source string as required by the makeReadOnly signature.",
+      "max_score": 20
+    },
+    {
+      "name": "Return primitive unchanged",
+      "description": "The returned value for number, boolean, null, and string inputs is identical (===) to the input value.",
+      "max_score": 30
+    },
+    {
+      "name": "No logger calls for primitives",
+      "description": "The violation logger is not called when the tracking function processes a primitive value or null.",
+      "max_score": 20
+    }
+  ]
+}

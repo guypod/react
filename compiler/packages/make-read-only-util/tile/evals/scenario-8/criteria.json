@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee understands the multi-call detection model of the package. Property addition detection (FORGET_ADD_PROP_IMMUT) only fires on the second call to makeReadOnly with the same object, when the package compares the current properties against those recorded in the WeakMap cache. Criteria focus on correct two-phase usage of the tracking function.",
+  "type": "weighted_checklist",
+  "capability_tested": "Property Addition Detection Between Calls",
+  "checklist": [
+    {
+      "name": "First call registers object",
+      "description": "makeReadOnly is called on the object before any property additions, establishing the baseline in the package's WeakMap cache.",
+      "max_score": 25
+    },
+    {
+      "name": "Second call triggers detection",
+      "description": "After adding a new property, makeReadOnly is called again on the same object to trigger the package's addition check.",
+      "max_score": 30
+    },
+    {
+      "name": "Logger called with addition type",
+      "description": "The logger is invoked with the FORGET_ADD_PROP_IMMUT violation type as its first argument when the added property is detected on the second call.",
+      "max_score": 25
+    },
+    {
+      "name": "Added property key logged",
+      "description": "The logger is called with the key (name) of the newly added property as its third argument.",
+      "max_score": 20
+    }
+  ]
+}

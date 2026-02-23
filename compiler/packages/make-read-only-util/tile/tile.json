@@ -1,0 +1,8 @@
+{
+  "name": "guydemo/make-read-only-util",
+  "version": "0.0.1",
+  "docs": "docs/index.md",
+  "describes": "pkg:npm/make-read-only-util@0.0.1",
+  "summary": "Utility package that tracks mutations to objects marked as read-only by installing property descriptor proxies that invoke a violation logger when properties are written, deleted, added, or changed.",
+  "private": true
+}

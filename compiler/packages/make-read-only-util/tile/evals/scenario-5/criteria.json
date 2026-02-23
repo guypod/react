@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee understands that the package tracks mutations transitively through nested objects. When makeReadOnly is applied to a parent object and a nested child property is subsequently read via the installed getter, the child is also made read-only, so mutations on the child are detected. Criteria focus on leveraging this package behavior correctly.",
+  "type": "weighted_checklist",
+  "capability_tested": "Transitive Nested Mutation Tracking",
+  "checklist": [
+    {
+      "name": "Apply tracking to root",
+      "description": "buildMakeReadOnly and the returned makeReadOnly are used to apply tracking to the root (top-level) object only — not to child objects directly.",
+      "max_score": 25
+    },
+    {
+      "name": "Nested mutation logged",
+      "description": "After tracking the root object, mutating a property on a nested object-valued property triggers the logger.",
+      "max_score": 35
+    },
+    {
+      "name": "Correct key and value logged",
+      "description": "The logger is called with the key of the mutated nested property (not the parent key) and the new value assigned to it.",
+      "max_score": 25
+    },
+    {
+      "name": "Source propagated to nested",
+      "description": "The source string provided when tracking the root object is the same source string included in the logger call for the nested mutation.",
+      "max_score": 15
+    }
+  ]
+}

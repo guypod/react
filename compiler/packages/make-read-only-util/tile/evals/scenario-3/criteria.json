@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee understands that the makeReadOnly function's second argument (source) is threaded through to all violation log calls. The evaluatee must wire up the logger and source correctly using the package's API. Criteria focus on correct parameter usage and logger invocation.",
+  "type": "weighted_checklist",
+  "capability_tested": "Source Identifier in Violation Logs",
+  "checklist": [
+    {
+      "name": "Factory with logger",
+      "description": "buildMakeReadOnly is called with the provided logger callback as its first argument.",
+      "max_score": 25
+    },
+    {
+      "name": "Source passed to makeReadOnly",
+      "description": "The source string is passed as the second argument to the makeReadOnly function call (not to the factory).",
+      "max_score": 30
+    },
+    {
+      "name": "Logger receives source",
+      "description": "When a mutation occurs, the logger is invoked with the source string as its second argument, matching what was passed to makeReadOnly.",
+      "max_score": 30
+    },
+    {
+      "name": "Different sources isolated",
+      "description": "Two objects tracked with different source strings produce violation logs with their respective source strings, not a shared or incorrect value.",
+      "max_score": 15
+    }
+  ]
+}
