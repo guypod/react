@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee correctly uses the second parameter of buildMakeReadOnly to configure class-level exclusions. The evaluatee must pass the skip list to the factory (not implement the check themselves) and verify that the package's class-name matching causes skipped instances to bypass tracking. Criteria focus on correct factory parameter usage.",
+  "type": "weighted_checklist",
+  "capability_tested": "Class Instance Skipping",
+  "checklist": [
+    {
+      "name": "Pass skip list to factory",
+      "description": "The array of class name strings is passed as the second argument to buildMakeReadOnly, not implemented as a wrapper around the returned function.",
+      "max_score": 35
+    },
+    {
+      "name": "Skipped class not tracked",
+      "description": "When the tracking function is called on an instance of a class whose name is in the skip list, the logger is not called even after mutations to that instance's properties.",
+      "max_score": 35
+    },
+    {
+      "name": "Non-skipped class tracked",
+      "description": "Objects whose constructor name is not in the skip list are still tracked normally and trigger the logger on mutation.",
+      "max_score": 20
+    },
+    {
+      "name": "Constructor name matching",
+      "description": "The exclusion is based on constructor.name matching (the package's mechanism), not on instanceof checks or manual type guards.",
+      "max_score": 10
+    }
+  ]
+}

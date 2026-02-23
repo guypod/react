@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee understands that deletion detection (FORGET_DELETE_PROP_IMMUT) in the package requires two calls to makeReadOnly on the same object — first to register, then to detect changes. On the second call the package compares cached getter references against current property descriptors; a missing property triggers the deletion log. Criteria focus on correct two-phase usage.",
+  "type": "weighted_checklist",
+  "capability_tested": "Property Deletion Detection Between Calls",
+  "checklist": [
+    {
+      "name": "First call registers object",
+      "description": "makeReadOnly is called on the object before any deletions, establishing the property baseline in the package's WeakMap cache.",
+      "max_score": 25
+    },
+    {
+      "name": "Second call triggers detection",
+      "description": "After deleting a property, makeReadOnly is called again on the same object to trigger the package's deletion check.",
+      "max_score": 30
+    },
+    {
+      "name": "Logger called with deletion type",
+      "description": "The logger is invoked with the FORGET_DELETE_PROP_IMMUT violation type as its first argument when the deleted property is detected on the second call.",
+      "max_score": 25
+    },
+    {
+      "name": "Deleted property key logged",
+      "description": "The logger is called with the key (name) of the deleted property as its third argument.",
+      "max_score": 20
+    }
+  ]
+}

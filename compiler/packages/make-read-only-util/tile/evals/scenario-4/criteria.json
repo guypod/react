@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee correctly uses the package to intercept and log direct property mutations on tracked objects. The key behaviors are: the logger is called with the correct violation type (FORGET_MUTATE_IMMUT), source, key, and new value; and the write still takes effect so the object remains usable. Criteria focus exclusively on package API usage.",
+  "type": "weighted_checklist",
+  "capability_tested": "Direct Property Mutation Logging",
+  "checklist": [
+    {
+      "name": "Apply tracking",
+      "description": "buildMakeReadOnly is called with the logger and the returned makeReadOnly function is applied to the object before any mutations occur.",
+      "max_score": 25
+    },
+    {
+      "name": "Logger called on write",
+      "description": "After tracking is applied, a direct property write triggers the logger with the FORGET_MUTATE_IMMUT violation type as the first argument.",
+      "max_score": 30
+    },
+    {
+      "name": "Logger receives key and value",
+      "description": "The logger is called with the mutated property key (third argument) and the new value (fourth argument).",
+      "max_score": 25
+    },
+    {
+      "name": "Write takes effect",
+      "description": "After the violation is logged, reading the mutated property returns the new value, demonstrating that the write succeeded in the package's internal backing store.",
+      "max_score": 20
+    }
+  ]
+}

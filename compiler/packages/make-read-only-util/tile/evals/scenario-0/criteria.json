@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee correctly uses the package's factory function to create a mutation tracking function. The evaluatee must import the package's default export, call it with a logger and a skip list, and return the resulting tracking function. Criteria focus exclusively on correct package API usage.",
+  "type": "weighted_checklist",
+  "capability_tested": "Factory Function Initialization",
+  "checklist": [
+    {
+      "name": "Import factory",
+      "description": "The solution imports the default export from make-read-only-util (the factory function `buildMakeReadOnly`).",
+      "max_score": 25
+    },
+    {
+      "name": "Call factory correctly",
+      "description": "The factory function is called with exactly two arguments: a logger callback as the first argument and an array of strings as the second argument.",
+      "max_score": 30
+    },
+    {
+      "name": "Logger signature",
+      "description": "The logger callback passed to the factory accepts at least the violation type, source, key, and optional value parameters as required by the package's ROViolationLogger type.",
+      "max_score": 20
+    },
+    {
+      "name": "Return tracking function",
+      "description": "The result of calling the factory (the makeReadOnly function) is correctly returned or exported for use.",
+      "max_score": 25
+    }
+  ]
+}

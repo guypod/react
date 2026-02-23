@@ -1,0 +1,27 @@
+{
+  "context": "This scenario tests whether the evaluatee relies on the package's built-in cyclic reference protection rather than implementing their own guard. The package uses a WeakMap cache that records visited objects; re-encountering the same object causes an early return rather than recursion. Criteria focus on correct package usage for objects with circular references.",
+  "type": "weighted_checklist",
+  "capability_tested": "Cyclic Reference Handling",
+  "checklist": [
+    {
+      "name": "Use package for cyclic objects",
+      "description": "The solution passes self-referential or otherwise cyclic objects directly to the makeReadOnly function without any pre-processing or cycle-breaking.",
+      "max_score": 35
+    },
+    {
+      "name": "No stack overflow",
+      "description": "Tracking a cyclic object completes without throwing a RangeError (stack overflow), because the package's WeakMap cache prevents infinite recursion.",
+      "max_score": 35
+    },
+    {
+      "name": "Referential equality preserved",
+      "description": "The result of makeReadOnly on a cyclic object is strictly equal (===) to the input object.",
+      "max_score": 20
+    },
+    {
+      "name": "Self-reference accessible",
+      "description": "After tracking, the self-referential property of the object still resolves to the original object reference.",
+      "max_score": 10
+    }
+  ]
+}
